@@ -1,0 +1,10 @@
+*.o
+!uapi/*.o
+*.d
+*.su
+*.sw[pno]
+build/*
+twilio-microvisor-tools/
+*.xcworkspace/*
+__pycache__
+.DS_Store
