@@ -1,15 +1,21 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
-
+# Set project name
 set(PROJECT_NAME "mv-remote-debug-demo")
+
+# Set to 0 to build without remote debugging enabled
 set(ENABLE_REMOTE_DEBUGGING 1)
 set(PUB_KEY_PATH "debug_auth_pub_key.pem")
+
+# Set to false to stop '[DEBUG]' messages being logged
+add_compile_definitions(LOG_DEBUG_MESSAGES=true)
+
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
 
 project(${PROJECT_NAME} C CXX ASM)
 
 include_directories(include
-    ${twilio-microvisor-hal-stm32u5_INCLUDE_DIRS})
+                    ${twilio-microvisor-hal-stm32u5_INCLUDE_DIRS})
 
 set(INCLUDED_HAL_FILES
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c

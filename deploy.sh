@@ -7,19 +7,26 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.5.1
+# @version   1.5.2
 # @license   MIT
 #
 
 # GLOBALS
+app_dir="demo"
+private_key_path="build/${app_dir}/debug_auth_priv_key.pem"
+zip_path="build/${app_dir}/mv-remote-debug-demo.zip"
+cmake_path="${app_dir}/CMakeLists.txt"
 do_log=0
 do_build=1
 do_deploy=1
 do_update=1
 public_key_path=NONE
-private_key_path="demo/debug_auth_priv_key.pem"
-zip_path="demo/mv-remote-debug-demo.zip"
-cmake_path="demo/CMakeLists.txt"
+
+# NOTE
+# This script the build directory is called 'build' and exists within
+# the project directory. If it is used to build the app, this will be
+# the case. You can pass in alternative target for the build product
+# eg. './deploy.sh build_alt/app/my_app.zip'
 
 # FUNCTIONS
 show_help() {
@@ -46,9 +53,9 @@ build_app() {
     else
         cmake -S . -B build
     fi
-    
+
     cmake --build build --clean-first > /dev/null
-    
+
     if [[ $? -eq 0 ]]; then
         echo "App built"
     else
@@ -122,8 +129,8 @@ if [[ ${do_deploy} -eq 1 ]]; then
     fi
 
     # Try to upload the bundle
-    echo "Uploading build/${zip_path}..."
-    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -F File=@"build/${zip_path}")
+    echo "Uploading ${zip_path}..."
+    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -F File=@"${zip_path}")
 
     app_sid=$(echo "${upload_action}" | jq -r '.sid')
 
@@ -141,7 +148,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
         else
             echo "[ERROR] Could not assign app ${app_sid} to device ${MV_DEVICE_SID}"
             echo "Response from server:"
-            echo "${update_actio}n"
+            echo "${update_action}"
             exit 1
         fi
     fi
@@ -155,7 +162,7 @@ echo -e "\nUse the following command to initiate remote debugging:"
 if [[ "${public_key_path}" != "NONE" ]]; then
     echo "twilio microvisor:debug ${MV_DEVICE_SID} '${private_key_path}'"
 else
-    echo "twilio microvisor:debug ${MV_DEVICE_SID} '$(pwd)/build/${private_key_path}'"
+    echo "twilio microvisor:debug ${MV_DEVICE_SID} '$(pwd)/${private_key_path}'"
 fi
 
 # Start logging if requested to do so

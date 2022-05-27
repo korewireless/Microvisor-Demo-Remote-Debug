@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set application data
 set(APP "Microvisor Remote Debug Demo")
-set(VERSION_NUMBER "1.0.0")
-set(BUILD_NUMBER "3")
+set(VERSION_NUMBER "1.0.1")
+set(BUILD_NUMBER "2")
 
 message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 
@@ -11,7 +11,6 @@ message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 add_compile_definitions(APP_NAME="${APP}")
 add_compile_definitions(APP_VERSION="${VERSION_NUMBER}")
 add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
-add_compile_definitions(LOG_DEBUG_MESSAGES=false)
 
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
@@ -28,9 +27,9 @@ target_link_libraries(${PROJECT_NAME} LINK_PUBLIC
 # Check for (and prepare to use) passed-in path to public key
 if(DEFINED RD_PUBLIC_KEYPATH AND (NOT ${RD_PUBLIC_KEYPATH} EQUAL "NONE"))
     set(PUB_KEY_PATH "${RD_PUBLIC_KEYPATH}")
-    set(NO_KEY_GEN "TRUE")
+    set(NO_KEY_GEN 1)
 else()
-    set(NO_KEY_GEN "FALSE")
+    set(NO_KEY_GEN 0)
 endif()
 
 # Optional informational and additional format generation, including Bundle output
@@ -74,7 +73,7 @@ if(DEFINED ENABLE_REMOTE_DEBUGGING AND ${ENABLE_REMOTE_DEBUGGING} EQUAL 1)
     message("Bundling ${APP} for remote debugging")
     # Don't generate keys if a public key has been passed in
     # via the deploy script --public-key option
-    if(DEFINED NO_KEY_GEN AND ${NO_KEY_GEN} EQUAL "TRUE")
+    if(DEFINED NO_KEY_GEN AND ${NO_KEY_GEN} EQUAL 1)
         add_custom_target(extras ALL DEPENDS EXTRA_FILES REMOTE_DEBUG)
     else()
         add_custom_target(extras ALL DEPENDS GEN_KEYS EXTRA_FILES REMOTE_DEBUG)
