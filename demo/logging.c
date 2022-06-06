@@ -152,6 +152,14 @@ int _write(int file, char *ptr, int length) {
     size_t len = strlen(timestamp);
     if (len > 0) {
         status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)timestamp, len, &time_chars);
+        
+        // FROM 1.0.1 -- Reset the log channel on closure
+        if (status == MV_STATUS_CHANNELCLOSED) {
+            log_close_channel();
+            log_open_channel();
+            status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)timestamp, len, &time_chars);
+        }
+        
         if (status != MV_STATUS_OKAY) {
             errno = EIO;
             return -1;
@@ -162,6 +170,14 @@ int _write(int file, char *ptr, int length) {
     // has accepted the request to write data to the channel.
     uint32_t msg_chars = 0;
     status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)ptr, length, &msg_chars);
+    
+    // FROM 1.0.1 -- Reset the log channel on closure
+    if (status == MV_STATUS_CHANNELCLOSED) {
+        log_close_channel();
+        log_open_channel();
+        status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)ptr, length, &msg_chars);
+    }
+    
     if (status == MV_STATUS_OKAY) {
         // Return the number of characters written to the channel
         return time_chars + msg_chars;
@@ -222,7 +238,7 @@ void log_open_network() {
         // so we wait for it to come up before opening the data channel -- which
         // would fail otherwise
         enum MvNetworkStatus net_status;
-        while (true) {
+        while (1) {
             // Request the status of the network connection, identified by its handle.
             // If we're good to continue, break out of the loop...
             if (mvGetNetworkStatus(log_handles.network, &net_status) == MV_STATUS_OKAY && net_status == MV_NETWORKSTATUS_CONNECTED) {

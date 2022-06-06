@@ -61,7 +61,7 @@ int main(void) {
     printf("Debug test variable start value: %lu\n", store);
 
     // Main program loop
-    while (true) {
+    while (1) {
         enum MvStatus status = mvGetMicroseconds(&tick);
         if (status == MV_STATUS_OKAY && tick - last_led_flash_tick > LED_FLASH_PERIOD_US) {
             // Toggle the USER LED's GPIO pin every LED_FLASH_PERIOD_US microseconds
