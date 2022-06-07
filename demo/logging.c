@@ -153,7 +153,7 @@ int _write(int file, char *ptr, int length) {
     if (len > 0) {
         status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)timestamp, len, &time_chars);
         
-        // FROM 1.0.1 -- Reset the log channel on closure
+        // FROM 1.0.2 -- Reset the log channel on closure
         if (status == MV_STATUS_CHANNELCLOSED) {
             log_close_channel();
             log_open_channel();
@@ -171,7 +171,7 @@ int _write(int file, char *ptr, int length) {
     uint32_t msg_chars = 0;
     status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)ptr, length, &msg_chars);
     
-    // FROM 1.0.1 -- Reset the log channel on closure
+    // FROM 1.0.2 -- Reset the log channel on closure
     if (status == MV_STATUS_CHANNELCLOSED) {
         log_close_channel();
         log_open_channel();
