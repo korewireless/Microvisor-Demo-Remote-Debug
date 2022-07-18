@@ -68,7 +68,7 @@ if(NOT OPENSSL)
 endif()
 
 # Based on build setting (see project CMakeLists.txt),
-# select which addtional command sets to run
+# select which additional command sets to run
 if(DEFINED ENABLE_REMOTE_DEBUGGING AND ${ENABLE_REMOTE_DEBUGGING} EQUAL 1)
     message("Bundling ${APP} for remote debugging")
     # Don't generate keys if a public key has been passed in
