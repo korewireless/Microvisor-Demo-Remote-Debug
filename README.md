@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 1.0.2
+# Twilio Microvisor Remote Debugging Demo 1.0.3
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -52,7 +52,7 @@ sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi git \
 Now run:
 
 ```bash
-pip3 install cryptography protobuf
+pip3 install cryptography protobuf~=3.0
 ```
 
 ### Twilio CLI

@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 1.0.1
+ * Version 1.0.3
  * Copyright © 2022, Twilio
  * Licence: Apache 2.0
  *
@@ -152,14 +152,14 @@ int _write(int file, char *ptr, int length) {
     size_t len = strlen(timestamp);
     if (len > 0) {
         status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)timestamp, len, &time_chars);
-        
+
         // FROM 1.0.2 -- Reset the log channel on closure
         if (status == MV_STATUS_CHANNELCLOSED) {
             log_close_channel();
             log_open_channel();
             status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)timestamp, len, &time_chars);
         }
-        
+
         if (status != MV_STATUS_OKAY) {
             errno = EIO;
             return -1;
@@ -170,14 +170,14 @@ int _write(int file, char *ptr, int length) {
     // has accepted the request to write data to the channel.
     uint32_t msg_chars = 0;
     status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)ptr, length, &msg_chars);
-    
+
     // FROM 1.0.2 -- Reset the log channel on closure
     if (status == MV_STATUS_CHANNELCLOSED) {
         log_close_channel();
         log_open_channel();
         status = mvWriteChannelStream(log_handles.channel, (const uint8_t*)ptr, length, &msg_chars);
     }
-    
+
     if (status == MV_STATUS_OKAY) {
         // Return the number of characters written to the channel
         return time_chars + msg_chars;
