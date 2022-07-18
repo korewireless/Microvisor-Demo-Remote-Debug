@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.5.2
+# @version   1.5.3
 # @license   MIT
 #
 
@@ -54,9 +54,7 @@ build_app() {
         cmake -S . -B build
     fi
 
-    cmake --build build --clean-first > /dev/null
-
-    if [[ $? -eq 0 ]]; then
+    if cmake --build build --clean-first > /dev/null ; then
         echo "App built"
     else
         echo "[ERROR] Could not build the app... exiting"
@@ -65,7 +63,7 @@ build_app() {
 }
 
 update_build_number() {
-    build_val=$(grep 'set(BUILD_NUMBER "' ${cmake_path})
+    build_val=$(grep 'set(BUILD_NUMBER "' "${cmake_path}")
     old_num=$(echo "${build_val}" | cut -d '"' -s -f 2)
     ((new_num=old_num+1))
 
