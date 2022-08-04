@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 1.0.3
+ * Version 2.0.0
  * Copyright © 2022, Twilio
  * Licence: Apache 2.0
  *
@@ -17,6 +17,8 @@
 #define     USER_TAG_LOGGING_OPEN_CHANNEL       2
 #define     USER_TAG_HTTP_OPEN_CHANNEL          3
 
+#define     USER_HANDLE_LOGGING_STARTED         0xFFFF
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,11 +28,18 @@ extern "C" {
 /*
  * PROTOTYPES
  */
-void            log_open_channel(void);
-void            log_close_channel(void);
-void            log_channel_center_setup(void);
+void            log_start(void);
+
 void            log_open_network(void);
-MvNetworkHandle get_net_handle();
+void            log_notification_center_setup(void);
+void            log_service_setup(void);
+
+MvNetworkHandle get_net_handle(void);
+uint32_t        get_log_handle(void);
+
+void            server_log(char* format_string, ...);
+void            server_error(char* format_string, ...);
+void            do_log(bool is_err, char* format_string, va_list args);
 
 
 #ifdef __cplusplus

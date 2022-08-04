@@ -1,10 +1,14 @@
-# Twilio Microvisor Remote Debugging Demo 1.0.3
+# Twilio Microvisor Remote Debugging Demo 2.0.0
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
 The application code files can be found in the [demo/](demo/) directory. The [ST_Code/](ST_Code/) directory contains required components that are not part of Twilio Microvisor STM32U5 HAL, which this sample accesses as a submodule.
 
 This repo contains a `.gdbinit` file which sets the remote target to localhost on port 8001 to match the Twilio CLI Microvisor plugin remote debugging defaults. To enable this file, add `set auto-load safe-path .` to your `~/.gdbinit` file, creating one if necessary.
+
+## Release Notes
+
+Version 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
 
 ## Cloning the Repo
 
@@ -21,11 +25,15 @@ cd microvisor-remote-debug-demo
 git submodule update --init --recursive
 ```
 
-To subsequently update the submodules to their most recent commits, run:
+## Repo Updates
+
+When the repo is updated, and you pull the changes, you should also always update dependency submodules. To do so, run:
 
 ```bash
 git submodule update --remote --recursive
 ```
+
+We recommend following this by deleting your `build` directory.
 
 ## Requirements
 
@@ -174,7 +182,7 @@ Use `n` to step through the function’s remaining lines until you come to the f
 (gdb) fin
 Run till exit from #0  debug_function_parent (vptr=0x2007ffac) at /home/smitty/GitHub/microvisor-remote-debug-demo/demo/main.c:146
 main () at /home/smitty/GitHub/microvisor-remote-debug-demo/demo/main.c:83
-83	            printf("Debug test variable value: %lu\n", store);
+83	            server_log("Debug test variable value: %lu\n", store);
 ```
 
 Now print `store` again:

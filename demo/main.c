@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 1.0.3
+ * Version 2.0.0
  * Copyright © 2022, Twilio
  * Licence: Apache 2.0
  *
@@ -58,7 +58,7 @@ int main(void) {
 
     // Remote debug demo variables
     uint32_t store = 42;
-    printf("Debug test variable start value: %lu\n", store);
+    server_log("Debug test variable start value: %lu", store);
 
     // Main program loop
     while (1) {
@@ -80,7 +80,7 @@ int main(void) {
              * **********************************************
              */
             debug_function_parent(&store);
-            printf("Debug test variable value: %lu\n", store);
+            server_log("Debug test variable value: %lu", store);
 
             // No channel open? Try and send the temperature
             if (http_handles.channel == 0 && http_open_channel()) {
@@ -347,7 +347,7 @@ void http_process_response(void) {
                 status = mvReadHttpResponseBody(http_handles.channel, 0, buffer, resp_data.body_length);
                 if (status == MV_STATUS_OKAY) {
                     // Retrieved the body data successfully so log it
-                    printf("%s\n", buffer);
+                    server_log("Message JSON:\n%s", buffer);
                     //output_headers(resp_data.num_headers);
                 } else {
                     server_error("HTTP response body read status %i", status);
@@ -370,39 +370,5 @@ void http_process_response(void) {
 void log_device_info(void) {
     uint8_t buffer[35] = { 0 };
     mvGetDeviceId(buffer, 34);
-    printf("Device: %s\n   App: %s %s\n Build: %i\n", buffer, APP_NAME, APP_VERSION, BUILD_NUM);
-}
-
-
-/**
- * @brief Issue debug message.
- *
- * @param format_string Message string with optional formatting
- * @param ...           Optional injectable values
- */
-void server_log(char* format_string, ...) {
-    if (LOG_DEBUG_MESSAGES) {
-        va_list args;
-        char buffer[512] = "[DEBUG] ";
-        va_start(args, format_string);
-        vsprintf(&buffer[8], format_string, args);
-        va_end(args);
-        printf("%s\n", buffer);
-    }
-}
-
-
-/**
- * @brief Issue error message.
- *
- * @param format_string Message string with optional formatting
- * @param ...           Optional injectable values
- */
-void server_error(char* format_string, ...) {
-    va_list args;
-    char buffer[512] = "[ERROR] ";
-    va_start(args, format_string);
-    vsprintf(&buffer[8], format_string, args);
-    va_end(args);
-    printf("%s\n", buffer);
+    server_log("Device: %s\n   App: %s %s\n Build: %i", buffer, APP_NAME, APP_VERSION, BUILD_NUM);
 }

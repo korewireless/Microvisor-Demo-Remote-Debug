@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 1.0.3
+ * Version 2.0.0
  * Copyright © 2022, Twilio
  * Licence: Apache 2.0
  *
@@ -62,8 +62,6 @@ bool        http_send_request();
 void        http_process_response(void);
 
 void        log_device_info(void);
-void        server_log(char* format_string, ...) ;
-void        server_error(char* format_string, ...);
 
 void        debug_function_parent(uint32_t* vptr);
 bool        debug_function_child(uint32_t* vptr);
