@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.5.3
+# @version   1.5.4
 # @license   MIT
 #
 
@@ -47,6 +47,11 @@ stream_log() {
     twilio microvisor:logs:stream "${MV_DEVICE_SID}"
 }
 
+show_error_and_exit() {
+    echo "[ERROR] $1"
+    exit 1
+}
+
 build_app() {
     if [[ "${public_key_path}" != "NONE" ]]; then
         cmake -S . -B build -D "RD_PUBLIC_KEYPATH:STRING=${public_key_path}"
@@ -57,8 +62,7 @@ build_app() {
     if cmake --build build --clean-first > /dev/null ; then
         echo "App built"
     else
-        echo "[ERROR] Could not build the app... exiting"
-        exit 1
+        show_error_and_exit "Could not build the app... exiting"
     fi
 }
 
@@ -78,8 +82,19 @@ update_build_number() {
 }
 
 # RUNTIME START
+# Check prequisites #1: Bash version 4+
+bv=$(/usr/bin/env bash --version | grep 'GNU bash' | awk {'print $4'} | cut -d. -f1)
+[[ ${bv} -lt 4 ]] && show_error_and_exit "This script requires Bash 4+"
+
+# Check prequisites #2: utilities
+prqs=("jq" "cmake" "curl" "twilio")
+for prq in "${prqs[@]}"; do
+    check=$(which ${prq}) || show_error_and_exit "${prq} not installed... exiting"
+done
+
 arg_is_value=0
 for arg in "$@"; do
+    # Make arg lowercase
     check_arg=${arg,,}
     if [[ ${arg_is_value} -gt 0 ]]; then
         case "${arg_is_value}" in
@@ -122,23 +137,21 @@ if [[ ${do_deploy} -eq 1 ]]; then
     # Check we have what looks like a bundle
     extension="${zip_path##*.}"
     if [[ "${extension}" != "zip" ]]; then
-        echo "[ERROR] ${zip_path} does not indicate a .zip file"
-        exit 1
+        show_error_and_exit "${zip_path} does not indicate a .zip file"
     fi
 
     # Try to upload the bundle
     echo "Uploading ${zip_path}..."
-    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -F File=@"${zip_path}")
+    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" -s -F File=@"${zip_path}")
 
     app_sid=$(echo "${upload_action}" | jq -r '.sid')
 
-    if [[ -z "${app_sid}" ]]; then
-        echo "[ERROR] Could not upload app"
-        exit 1
+    if [[ -z "${app_sid}" || "${app_sid}" == "null" ]]; then
+        show_error_and_exit "Could not upload app"
     else
         # Success... try to assign the app
         echo "Assigning app ${app_sid} to device ${MV_DEVICE_SID}..."
-        update_action=$(curl -X POST "https://microvisor.twilio.com/v1/Devices/${MV_DEVICE_SID}" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -d TargetApp="${app_sid}")
+        update_action=$(curl -X POST "https://microvisor.twilio.com/v1/Devices/${MV_DEVICE_SID}" -u "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" -s -d TargetApp="${app_sid}")
         up_date=$(echo "${update_action}" | jq -r '.date_updated')
 
         if [[ "${up_date}" != "null" ]]; then
