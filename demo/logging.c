@@ -37,16 +37,16 @@ void log_start(void) {
     
     // Connect to the network
     // NOTE This connection spans logging and HTTP comms
-    log_open_network();
+    net_open_network();
 }
 
 
 /**
  * @brief Configure and connect to the network.
  */
-void log_open_network() {
+void net_open_network() {
     // Configure the network's notification center
-    log_notification_center_setup();
+    net_notification_center_setup();
     
     if (net_handles.network == 0) {
         // Configure the network connection request
@@ -85,15 +85,15 @@ void log_open_network() {
 
 
 /**
- * @brief Configure the logging channel Notification Center.
+ * @brief Configure the network Notification Center.
  */
-void log_notification_center_setup() {
+void net_notification_center_setup() {
     if (net_handles.notification == 0) {
         // Clear the notification store
         memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
 
         // Configure a notification center for network-centric notifications
-        static struct MvNotificationSetup log_notification_config = {
+        static struct MvNotificationSetup net_notification_config = {
             .irq = TIM1_BRK_IRQn,
             .buffer = (struct MvNotification *)net_notification_buffer,
             .buffer_size = sizeof(net_notification_buffer)
@@ -101,7 +101,7 @@ void log_notification_center_setup() {
 
         // Ask Microvisor to establish the notification center
         // and confirm that it has accepted the request
-        enum MvStatus status = mvSetupNotifications(&log_notification_config, &net_handles.notification);
+        enum MvStatus status = mvSetupNotifications(&net_notification_config, &net_handles.notification);
         assert(status == MV_STATUS_OKAY);
 
         // Start the notification IRQ
