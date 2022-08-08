@@ -48,7 +48,7 @@ stream_log() {
 }
 
 show_error_and_exit() {
-    echo "[ERROR] $1"
+    echo "[ERROR] $1... exiting"
     exit 1
 }
 
@@ -60,11 +60,11 @@ check_prereqs() {
     #2: required utilities
     prqs=(jq cmake curl twilio)
     for prq in "${prqs[@]}"; do
-        check=$(which ${prq}) || show_error_and_exit "${prq} not installed... exiting"
+        check=$(which ${prq}) || show_error_and_exit "Required utility ${prq} not installed"
     done
 
     #3: credentials set
-    [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables... exiting"
+    [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables"
 }
 
 build_app() {
@@ -77,7 +77,7 @@ build_app() {
     if cmake --build build --clean-first > /dev/null ; then
         echo "App built"
     else
-        show_error_and_exit "Could not build the app... exiting"
+        show_error_and_exit "Could not build the app"
     fi
 }
 
@@ -102,10 +102,14 @@ check_prereqs
 
 # Parse arguments
 arg_is_value=0
+last_arg=NONE
 for arg in "$@"; do
     # Make arg lowercase
     check_arg=${arg,,}
     if [[ ${arg_is_value} -gt 0 ]]; then
+        if [[ "${arg:0:1}" = "-" ]]; then
+            show_error_and_exit "Missing value for ${last_arg}"
+        fi
         case "${arg_is_value}" in
             1) private_key_path="${arg}" ; echo "Remote Debugging private key: ${private_key_path}" ;;
             2) public_key_path="${arg}"  ; echo "Remote Debugging public key: ${public_key_path}"   ;;
@@ -119,9 +123,11 @@ for arg in "$@"; do
         do_log=1
     elif [[ "${check_arg}" = "--private-key" ]]; then
         arg_is_value=1
+        last_arg=${arg}
         continue
     elif [[ "${check_arg}" = "--public-key" ]]; then
         arg_is_value=2
+        last_arg=${arg}
         continue
     elif [[ "${check_arg}" = "-k" ]]; then
         do_log=1
@@ -132,6 +138,8 @@ for arg in "$@"; do
     elif [[ "${check_arg}" = "--help" || "${check_arg}" = "-h" ]]; then
         show_help
         exit 0
+    elif [[ "${arg:0:1}" = "-" ]]; then
+        show_error_and_exit "Unknown command: ${arg}"
     else
         zip_path="${arg}"
     fi
