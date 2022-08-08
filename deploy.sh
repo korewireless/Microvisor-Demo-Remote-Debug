@@ -52,6 +52,21 @@ show_error_and_exit() {
     exit 1
 }
 
+check_prereqs() {
+    #1: Bash version 4+
+    bv=$(/usr/bin/env bash --version | grep 'GNU bash' | awk {'print $4'} | cut -d. -f1)
+    [[ ${bv} -lt 4 ]] && show_error_and_exit "This script requires Bash 4+"
+
+    #2: required utilities
+    prqs=(jq cmake curl twilio)
+    for prq in "${prqs[@]}"; do
+        check=$(which ${prq}) || show_error_and_exit "${prq} not installed... exiting"
+    done
+
+    #3: credentials set
+    [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables... exiting"
+}
+
 build_app() {
     if [[ "${public_key_path}" != "NONE" ]]; then
         cmake -S . -B build -D "RD_PUBLIC_KEYPATH:STRING=${public_key_path}"
@@ -82,16 +97,10 @@ update_build_number() {
 }
 
 # RUNTIME START
-# Check prequisites #1: Bash version 4+
-bv=$(/usr/bin/env bash --version | grep 'GNU bash' | awk {'print $4'} | cut -d. -f1)
-[[ ${bv} -lt 4 ]] && show_error_and_exit "This script requires Bash 4+"
+# Check prequisites
+check_prereqs
 
-# Check prequisites #2: utilities
-prqs=("jq" "cmake" "curl" "twilio")
-for prq in "${prqs[@]}"; do
-    check=$(which ${prq}) || show_error_and_exit "${prq} not installed... exiting"
-done
-
+# Parse arguments
 arg_is_value=0
 for arg in "$@"; do
     # Make arg lowercase
