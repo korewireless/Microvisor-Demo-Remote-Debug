@@ -7,20 +7,25 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.5.4
+# @version   1.6.0
 # @license   MIT
 #
 
 # GLOBALS
-app_dir="demo"
+app_dir=demo
+app_name=mv-remote-debug-demo.zip
+#------------^ APP SPECIFIC ^------------
 private_key_path="build/${app_dir}/debug_auth_priv_key.pem"
-zip_path="build/${app_dir}/mv-remote-debug-demo.zip"
 cmake_path="${app_dir}/CMakeLists.txt"
+zip_path="build/${app_dir}/${app_name}"
 do_log=0
 do_build=1
 do_deploy=1
 do_update=1
 public_key_path=NONE
+output_mode=text
+mvplg_minor_min="3"
+mvplg_patch_min="0"
 
 # NOTE
 # This script the build directory is called 'build' and exists within
@@ -28,23 +33,32 @@ public_key_path=NONE
 # the case. You can pass in alternative target for the build product
 # eg. './deploy.sh build_alt/app/my_app.zip'
 
+# FROM 1.6.0 -- Trap ctrl-c
+stty -echoctl
+trap 'echo Done' SIGINT
+
 # FUNCTIONS
 show_help() {
     echo -e "Usage:\n"
-    echo -e "  deploy [-l] [-h] /optional/path/to/Microvisor/app/bunde.zip\n"
+    echo -e "  deploy /optional/path/to/Microvisor/app/bunde.zip\n"
     echo -e "Options:\n"
-    echo "  --log / -l           After deployment, start log streaming. Default: no logging"
-    echo "  --public-key {path}  /path/to/remote/debugging/public/key.pem"
-    echo "  --private-key {path} /path/to/remote/debugging/private/key.pem"
-    echo "  -k                   Start log streaming immediately; do not build or deploy"
-    echo "  -d                   Deploy without a build"
-    echo "  -h / --help          Show this help screen"
+    echo "  --log / -l            After deployment, start log streaming. Default: no logging"
+    echo "  --output / -o {mode}  Log output mode: \'text\` or \`json\`"
+    echo "  --public-key {path}   /path/to/remote/debugging/public/key.pem"
+    echo "  --private-key {path}  /path/to/remote/debugging/private/key.pem"
+    echo "  -d                    Deploy without a build"
+    echo "  --log-only            Start log streaming immediately; do not build or deploy"
+    echo "  -h / --help           Show this help screen"
     echo
 }
 
 stream_log() {
     echo -e "\nLogging from ${MV_DEVICE_SID}..."
-    twilio microvisor:logs:stream "${MV_DEVICE_SID}"
+    if [[ ${output_mode} == "json" ]]; then
+        twilio microvisor:logs:stream "${MV_DEVICE_SID}" --output=json | jq
+    else
+        twilio microvisor:logs:stream "${MV_DEVICE_SID}"
+    fi
 }
 
 show_error_and_exit() {
@@ -65,6 +79,13 @@ check_prereqs() {
 
     #3: credentials set
     [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables"
+    
+    #4: Microvisor plugin version
+    result=$(twilio plugins | grep 'microvisor' | awk {'print $2'})
+    minor=$(echo $result | cut -d. -f2)
+    patch=$(echo $result | cut -d. -f3)
+    [[ ${minor} -lt ${mvplg_minor_min} ]] && show_error_and_exit "Microvisor plugin 0.${mvplg_minor_min}.${mvplg_patch_min} or above required"
+    [[ ${minor} -eq ${mvplg_minor_min} && ${patch} -lt ${mvplg_patch_min} ]] && show_error_and_exit "Microvisor plugin 0.${mvplg_minor_min}.${mvplg_patch_min} or above required"
 }
 
 build_app() {
@@ -113,6 +134,7 @@ for arg in "$@"; do
         case "${arg_is_value}" in
             1) private_key_path="${arg}" ; echo "Remote Debugging private key: ${private_key_path}" ;;
             2) public_key_path="${arg}"  ; echo "Remote Debugging public key: ${public_key_path}"   ;;
+            3) output_mode="${check_arg}" ;;
             *) echo "[Error] Unknown argument" exit 1 ;;
         esac
         arg_is_value=0
@@ -129,7 +151,11 @@ for arg in "$@"; do
         arg_is_value=2
         last_arg=${arg}
         continue
-    elif [[ "${check_arg}" = "-k" ]]; then
+    elif [[ "${check_arg}" = "--output"  || "${check_arg}" = "-o" ]]; then
+        arg_is_value=3
+        last_arg=${arg}
+        continue
+    elif [[ "${check_arg}" = "--log-only" ]]; then
         do_log=1
         do_deploy=0
         do_build=0
@@ -144,6 +170,13 @@ for arg in "$@"; do
         zip_path="${arg}"
     fi
 done
+
+# FROM 1.6.0 -- check output mode
+if [[ ${output_mode} != "text" ]]; then
+    if [[ ${output_mode} != "json" ]]; then
+        output_mode=text
+    fi
+fi
 
 if [[ ${do_build} -eq 1 ]]; then
     [[ ${do_update} -eq 1 ]] && update_build_number
