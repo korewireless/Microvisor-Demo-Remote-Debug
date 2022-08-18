@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.5.3
+# @version   1.5.4
 # @license   MIT
 #
 
@@ -128,7 +128,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
 
     # Try to upload the bundle
     echo "Uploading ${zip_path}..."
-    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -F File=@"${zip_path}")
+    upload_action=$(curl -X POST https://microvisor-upload.twilio.com/v1/Apps -H "Content-Type: multipart/form-data" -u "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" -s -F File=@"${zip_path}")
 
     app_sid=$(echo "${upload_action}" | jq -r '.sid')
 
@@ -138,15 +138,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
     else
         # Success... try to assign the app
         echo "Assigning app ${app_sid} to device ${MV_DEVICE_SID}..."
-        update_action=$(curl -X POST "https://microvisor.twilio.com/v1/Devices/${MV_DEVICE_SID}" -u "${TWILIO_API_KEY}:${TWILIO_API_SECRET}" -s -d TargetApp="${app_sid}")
-        up_date=$(echo "${update_action}" | jq -r '.date_updated')
-
-        if [[ "${up_date}" != "null" ]]; then
-            echo "Updated device ${MV_DEVICE_SID} @ ${up_date}"
-        else
-            echo "[ERROR] Could not assign app ${app_sid} to device ${MV_DEVICE_SID}"
-            echo "Response from server:"
-            echo "${update_action}"
+        if ! assign_action=$(twilio api:microvisor:v1:devices:update --sid=${MV_DEVICE_SID} --target-app=${app_sid}); then
             exit 1
         fi
     fi
