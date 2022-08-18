@@ -78,13 +78,13 @@ sudo apt install -y twilio
 twilio plugins:install @twilio/plugin-microvisor
 ```
 
-Running the Twilio CLI and the project’s [deploy script](./deploy.sh) — for uploading the built code to the Twilio cloud and subsequent deployment to your Microvisor Nucleo Board — uses the following Twilio credentials stored as environment variables. They should be added to your shell profile:
+**Version 4.0.1 or above required**
+
+Running the Twilio CLI and the project’s [deploy script](./deploy.sh) — for uploading the built code to the Twilio cloud and subsequent deployment to your Microvisor Nucleo Board — uses the following Twilio credentials and data stored as environment variables. They should be added to your shell profile:
 
 ```bash
 export TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-export TWILIO_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-export TWILIO_API_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export MV_DEVICE_SID=UVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
@@ -92,14 +92,11 @@ You can get the first two from your Twilio Console [account dashboard](https://c
 
 To generate API keys and secrets, visit [**Account > API keys & tokens**](https://twilio.com/console/project/api-keys/).
 
-Restart your terminal and enter the following command:
+Enter the following command to get your target device’s SID and, if set, its unqiue name:
 
 ```bash
-curl https://microvisor.twilio.com/v1/Devices \
-  -u ${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN} -s | jq
+twilio api:microvisor:v1:devices:list
 ```
-
-This will yield JSON which contains a `device` array — your Microvisor Nucleo Board will be in that array. Use the value of its `sid` field for your `MV_DEVICE_SID` value.
 
 ## Build and deploy the application
 

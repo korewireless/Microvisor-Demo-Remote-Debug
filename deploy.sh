@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.6.0
+# @version   2.0.0
 # @license   MIT
 #
 
@@ -46,7 +46,7 @@ show_help() {
     echo "  --output / -o {mode}  Log output mode: \'text\` or \`json\`"
     echo "  --public-key {path}   /path/to/remote/debugging/public/key.pem"
     echo "  --private-key {path}  /path/to/remote/debugging/private/key.pem"
-    echo "  -d                    Deploy without a build"
+    echo "  --deploy-only         Deploy without a build"
     echo "  --log-only            Start log streaming immediately; do not build or deploy"
     echo "  -h / --help           Show this help screen"
     echo
@@ -76,11 +76,24 @@ check_prereqs() {
     for prq in "${prqs[@]}"; do
         check=$(which ${prq}) || show_error_and_exit "Required utility ${prq} not installed"
     done
+    
+    #3: Twilio CLI 4.0.1
+    info=$(twilio --version)
+    info=$(echo $info | cut -d ' ' -f1 | cut -d '/' -f2)
+    maj=$(echo $info | cut -d . -f1)
+    min=$(echo $info | cut -d . -f2)
+    pat=$(echo $info | cut -d . -f3)
 
-    #3: credentials set
+    [[ $maj -lt 4 ]] && show_error_and_exit "Twilio CLI must be version 4.0.1 or above"
+    [[ $maj -eq 4 && $min -eq 0 && $pat -eq 0 ]] && show_error_and_exit "Twilio CLI must be version 4.0.1 or above"
+
+    #4: credentials set
     [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables"
     
-    #4: Microvisor plugin version
+    #5: Device SID set
+    [[ -z ${MV_DEVICE_SID} ]] && show_error_and_exit "Twilio device SID not set as environment variable"
+        
+    #6: Microvisor plugin version
     result=$(twilio plugins | grep 'microvisor' | awk {'print $2'})
     minor=$(echo $result | cut -d. -f2)
     patch=$(echo $result | cut -d. -f3)
@@ -159,7 +172,7 @@ for arg in "$@"; do
         do_log=1
         do_deploy=0
         do_build=0
-    elif [[ "${check_arg}" = "-d" ]]; then
+    elif [[ "${check_arg}" = "--deploy-only" ]]; then
         do_build=0
     elif [[ "${check_arg}" = "--help" || "${check_arg}" = "-h" ]]; then
         show_help
@@ -201,15 +214,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
     else
         # Success... try to assign the app
         echo "Assigning app ${app_sid} to device ${MV_DEVICE_SID}..."
-        update_action=$(curl -X POST "https://microvisor.twilio.com/v1/Devices/${MV_DEVICE_SID}" -u "${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}" -s -d TargetApp="${app_sid}")
-        up_date=$(echo "${update_action}" | jq -r '.date_updated')
-
-        if [[ "${up_date}" != "null" ]]; then
-            echo "Updated device ${MV_DEVICE_SID} @ ${up_date}"
-        else
-            echo "[ERROR] Could not assign app ${app_sid} to device ${MV_DEVICE_SID}"
-            echo "Response from server:"
-            echo "${update_action}"
+        if ! update_action=$(twilio api:microvisor:v1:devices:update ${MV_DEVICE_SID} --target-app=${app_sid}); then
             exit 1
         fi
     fi
