@@ -65,20 +65,29 @@ pip3 install cryptography protobuf~=3.0
 
 ### Twilio CLI
 
-Install the Twilio CLI:
+Install the Twilio CLI. This is required to view streamed logs and for remote debugging. You need version 4.0.1 or above.
+
+**Note** If you have already installed the Twilio CLI using *npm*, we recommend removing it and then reinstalling as outlined below. Remove the old version with `npm remove -g twilio-cli`.
 
 ```bash
-wget -qO- https://twilio-cli-prod.s3.amazonaws.com/twilio_pub.asc \
-  | sudo apt-key add -
+wget -qO- https://twilio-cli-prod.s3.amazonaws.com/twilio_pub.asc | sudo apt-key add -
 sudo touch /etc/apt/sources.list.d/twilio.list
-echo 'deb https://twilio-cli-prod.s3.amazonaws.com/apt/ /' \
-  | sudo tee /etc/apt/sources.list.d/twilio.list
+echo 'deb https://twilio-cli-prod.s3.amazonaws.com/apt/ /' | sudo tee /etc/apt/sources.list.d/twilio.list
 sudo apt update
 sudo apt install -y twilio
+```
+
+Close your terminal window or tab, and open a new one. Now run:
+
+```bash
+nvm install --lts
+npm install twilio-cli -g
 twilio plugins:install @twilio/plugin-microvisor
 ```
 
-Running the Twilio CLI and the project’s [deploy script](./deploy.sh) — for uploading the built code to the Twilio cloud and subsequent deployment to your Microvisor Nucleo Board — uses the following Twilio credentials and data stored as environment variables. They should be added to your shell profile:
+#### Environment Variables
+
+Running the Twilio CLI and the project's [deploy script](./deploy.sh) — for uploading the built code to the Twilio cloud and subsequent deployment to your Microvisor Nucleo Board — uses the following Twilio credentials stored as environment variables. They should be added to your shell profile:
 
 ```bash
 export TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -86,13 +95,14 @@ export TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export MV_DEVICE_SID=UVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-You can get the first two from the Twilio Console [account dashboard](https://console.twilio.com/).
+You can get the first two from your Twilio Console [account dashboard](https://console.twilio.com/).
 
 Enter the following command to get your target device’s SID and, if set, its unqiue name:
 
 ```bash
 twilio api:microvisor:v1:devices:list
 ```
+
 
 ## Build and deploy the application
 

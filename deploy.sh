@@ -46,7 +46,7 @@ show_help() {
     echo "  --output / -o {mode}  Log output mode: \'text\` or \`json\`"
     echo "  --public-key {path}   /path/to/remote/debugging/public/key.pem"
     echo "  --private-key {path}  /path/to/remote/debugging/private/key.pem"
-    echo "  --deploy-only         Deploy without a build"
+    echo "  -d / --deploy         Deploy without a build"
     echo "  --log-only            Start log streaming immediately; do not build or deploy"
     echo "  -h / --help           Show this help screen"
     echo
@@ -74,29 +74,16 @@ check_prereqs() {
     #2: required utilities
     prqs=(jq cmake curl twilio)
     for prq in "${prqs[@]}"; do
-        check=$(which ${prq}) || show_error_and_exit "Required utility ${prq} not installed"
+        check=$(which "${prq}") || show_error_and_exit "Required utility ${prq} not installed"
     done
-    
-    #3: Twilio CLI 4.0.1
-    info=$(twilio --version)
-    info=$(echo $info | cut -d ' ' -f1 | cut -d '/' -f2)
-    maj=$(echo $info | cut -d . -f1)
-    min=$(echo $info | cut -d . -f2)
-    pat=$(echo $info | cut -d . -f3)
 
-    [[ $maj -lt 4 ]] && show_error_and_exit "Twilio CLI must be version 4.0.1 or above"
-    [[ $maj -eq 4 && $min -eq 0 && $pat -eq 0 ]] && show_error_and_exit "Twilio CLI must be version 4.0.1 or above"
-
-    #4: credentials set
+    #3: credentials set
     [[ -z ${TWILIO_ACCOUNT_SID} || -z ${TWILIO_AUTH_TOKEN} ]] && show_error_and_exit "Twilio credentials not set as environment variables"
     
-    #5: Device SID set
-    [[ -z ${MV_DEVICE_SID} ]] && show_error_and_exit "Twilio device SID not set as environment variable"
-        
-    #6: Microvisor plugin version
+    #4: Microvisor plugin version
     result=$(twilio plugins | grep 'microvisor' | awk {'print $2'})
-    minor=$(echo $result | cut -d. -f2)
-    patch=$(echo $result | cut -d. -f3)
+    minor=$(echo "$result" | cut -d. -f2)
+    patch=$(echo "$result" | cut -d. -f3)
     [[ ${minor} -lt ${mvplg_minor_min} ]] && show_error_and_exit "Microvisor plugin 0.${mvplg_minor_min}.${mvplg_patch_min} or above required"
     [[ ${minor} -eq ${mvplg_minor_min} && ${patch} -lt ${mvplg_patch_min} ]] && show_error_and_exit "Microvisor plugin 0.${mvplg_minor_min}.${mvplg_patch_min} or above required"
 }
@@ -172,7 +159,7 @@ for arg in "$@"; do
         do_log=1
         do_deploy=0
         do_build=0
-    elif [[ "${check_arg}" = "--deploy-only" ]]; then
+        elif [[ "${check_arg}" = "--deploy" || "${check_arg}" = "-d" ]]; then
         do_build=0
     elif [[ "${check_arg}" = "--help" || "${check_arg}" = "-h" ]]; then
         show_help
