@@ -214,7 +214,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
     else
         # Success... try to assign the app
         echo "Assigning app ${app_sid} to device ${MV_DEVICE_SID}..."
-        if ! update_action=$(twilio api:microvisor:v1:devices:update ${MV_DEVICE_SID} --target-app=${app_sid}); then
+        if ! assign_action=$(twilio api:microvisor:v1:devices:update --sid=${MV_DEVICE_SID} --target-app=${app_sid}); then
             exit 1
         fi
     fi

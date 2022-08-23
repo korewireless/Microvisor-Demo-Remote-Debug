@@ -45,7 +45,7 @@ You will also need a Twilio Microvisor Nucleo Development Board. These are curre
 
 This project is written in C. At this time, we only support Ubuntu 20.0.4. Users of other operating systems should build the code under a virtual machine running Ubuntu.
 
-**Note** macOS users may attempt to install the pre-requisites below using [Homebrew](https://brew.sh). This is not supported, but should work. You may need to change the names of a few of the packages listed in the `apt install` command below.
+**Note** macOS users may attempt to install the pre-requisites below using [Homebrew](https://brew.sh). This is not supported, but should work. You may need to change the names of a few of the packages listed in the `apt install` command below, and always change `sudo apt install <package>` to `brew install <package>`.
 
 ### Libraries and Tools
 
@@ -78,8 +78,6 @@ sudo apt install -y twilio
 twilio plugins:install @twilio/plugin-microvisor
 ```
 
-**Version 4.0.1 or above required**
-
 Running the Twilio CLI and the project’s [deploy script](./deploy.sh) — for uploading the built code to the Twilio cloud and subsequent deployment to your Microvisor Nucleo Board — uses the following Twilio credentials and data stored as environment variables. They should be added to your shell profile:
 
 ```bash
@@ -88,9 +86,7 @@ export TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 export MV_DEVICE_SID=UVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-You can get the first two from your Twilio Console [account dashboard](https://console.twilio.com/).
-
-To generate API keys and secrets, visit [**Account > API keys & tokens**](https://twilio.com/console/project/api-keys/).
+You can get the first two from the Twilio Console [account dashboard](https://console.twilio.com/).
 
 Enter the following command to get your target device’s SID and, if set, its unqiue name:
 
