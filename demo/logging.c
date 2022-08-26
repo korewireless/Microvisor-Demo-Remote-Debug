@@ -21,8 +21,8 @@ struct {
 // a time -- each record is 16 bytes in size.
 static volatile struct MvNotification net_notification_buffer[16];
 
-const uint32_t log_buffer_size = 1024;
-static uint8_t log_buffer[1024] __attribute__((aligned(512))) = {0} ;
+const uint32_t log_buffer_size = 4096;
+static uint8_t log_buffer[4096] __attribute__((aligned(512))) = {0} ;
 
 
 /**

@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   2.0.0
+# @version   1.6.0
 # @license   MIT
 #
 
@@ -40,13 +40,13 @@ trap 'echo Done' SIGINT
 # FUNCTIONS
 show_help() {
     echo -e "Usage:\n"
-    echo -e "  deploy /optional/path/to/Microvisor/app/bunde.zip\n"
+    echo -e "  ./deploy.sh /optional/path/to/Microvisor/app/bunde.zip\n"
     echo -e "Options:\n"
     echo "  --log / -l            After deployment, start log streaming. Default: no logging"
     echo "  --output / -o {mode}  Log output mode: \'text\` or \`json\`"
     echo "  --public-key {path}   /path/to/remote/debugging/public/key.pem"
     echo "  --private-key {path}  /path/to/remote/debugging/private/key.pem"
-    echo "  -d / --deploy         Deploy without a build"
+    echo "  --deploy / -d         Deploy without a build"
     echo "  --log-only            Start log streaming immediately; do not build or deploy"
     echo "  -h / --help           Show this help screen"
     echo
