@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 2.0.0
+# Twilio Microvisor Remote Debugging Demo 2.0.1
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
