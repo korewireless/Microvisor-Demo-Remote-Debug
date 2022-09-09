@@ -109,12 +109,22 @@ twilio api:microvisor:v1:devices:list
 Run:
 
 ```bash
-./deploy.sh --log
+./deploy.sh --log --genkeys
 ```
 
 This will build the demo, upload the build, and stage it for deployment to your device. If you encounter errors, please check your stored Twilio credentials.
 
 The `--log` flag initiates log-streaming.
+
+Watch the log for the lines
+
+```shell
+INSTALLING_APP
+STARTING_NEW_APP
+COMPLETE
+```
+
+which indicate the version of the application with your remote debugging public key is now running on the device and ready for remote debugging.
 
 ## A short GDB tutorial
 
