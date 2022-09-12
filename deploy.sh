@@ -26,7 +26,7 @@ do_update=1
 do_gen_keys=0
 output_mode=text
 mvplg_minor_min="3"
-mvplg_patch_min="3"
+mvplg_patch_min="4"
 
 # NOTE
 # This script assumes the build directory is called 'build' and exists
@@ -71,7 +71,7 @@ set_keys() {
     if [[ -d "${private_key_path}" ]]; then
         private_key_path="${private_key_path}/debug_auth_prv_key.pem"
     fi
-    
+
     if [[ -d "${public_key_path}" ]]; then
         public_key_path="${public_key_path}/debug_auth_pub_key.pem"
     fi
@@ -118,7 +118,7 @@ build_app() {
     else
         cmake -S . -B build
     fi
-    
+
     if cmake --build build --clean-first > /dev/null 2>&1 ; then
         echo "App built"
     else
@@ -203,12 +203,12 @@ if [[ ${do_gen_keys} -eq 1 ]]; then
         # Public key path not specified, so use the default
         public_key_path="$(pwd)/build/${app_dir}/debug_auth_pub_key.pem"
     fi
-    
+
     if [[ "${private_key_path}" = "NONE" ]]; then
         # Private key path not specified, so use the default
         private_key_path="$(pwd)/build/${app_dir}/debug_auth_prv_key.pem"
     fi
-    
+
     # Create the build directory so we can save keys there
     if [[ ! -e build ]]; then
         mkdir -p "$(pwd)/build/${app_dir}" || show_error_and_exit "Could not create the build directory"

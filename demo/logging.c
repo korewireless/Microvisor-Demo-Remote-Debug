@@ -193,10 +193,10 @@ void do_log(bool is_err, char* format_string, va_list args) {
     */
     
     // Write the message type to the message
-    sprintf(buffer, is_err ? " [ERROR] " : " [DEBUG] ");
+    sprintf(buffer, is_err ? "[ERROR] " : "[DEBUG] ");
     
     // Write the formatted text to the message
-    vsnprintf(&buffer[9], sizeof(buffer) - 10, format_string, args);
+    vsnprintf(&buffer[8], sizeof(buffer) - 9, format_string, args);
     
     // Output the message using the system call
     mvServerLog((const uint8_t*)buffer, (uint16_t)strlen(buffer));
