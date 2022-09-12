@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.6.0
+# @version   1.7.1
 # @license   MIT
 #
 
@@ -119,7 +119,7 @@ build_app() {
         cmake -S . -B build
     fi
 
-    if cmake --build build --clean-first > /dev/null 2>&1 ; then
+    if cmake --build build --clean-first 2>&1 ; then
         echo "App built"
     else
         show_error_and_exit "Could not build the app"
