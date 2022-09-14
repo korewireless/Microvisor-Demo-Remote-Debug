@@ -26,7 +26,7 @@ do_update=1
 do_gen_keys=0
 output_mode=text
 mvplg_minor_min="3"
-mvplg_patch_min="4"
+mvplg_patch_min="5"
 
 # NOTE
 # This script assumes the build directory is called 'build' and exists
@@ -59,7 +59,7 @@ show_help() {
 stream_log() {
     echo -e "\nLogging from ${MV_DEVICE_SID}..."
     if [[ ${output_mode} == "json" ]]; then
-        twilio microvisor:logs:stream "${MV_DEVICE_SID}" --output=json | jq
+        twilio microvisor:logs:stream "${MV_DEVICE_SID}" -o=json | jq
     else
         twilio microvisor:logs:stream "${MV_DEVICE_SID}"
     fi
