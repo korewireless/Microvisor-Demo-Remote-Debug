@@ -56,12 +56,6 @@ sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi \
   git curl build-essential cmake libsecret-1-dev jq openssl
 ```
 
-Now run:
-
-```bash
-pip3 install cryptography protobuf~=3.0
-```
-
 ### Twilio CLI
 
 Install the Twilio CLI. This is required to view streamed logs and for remote debugging. You need version 4.0.1 or above.
