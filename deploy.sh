@@ -7,16 +7,16 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.7.1
+# @version   1.8.0
 # @license   MIT
 #
 
 # GLOBALS
 app_dir=demo
-app_name=mv-remote-debug-demo.zip
+app_name=mv-remote-debug-demo.bin
 #------------^ APP SPECIFIC ^------------
 cmake_path="${app_dir}/CMakeLists.txt"
-zip_path="build/${app_dir}/${app_name}"
+bin_path="build/${app_dir}/${app_name}"
 private_key_path=NONE
 public_key_path=NONE
 do_log=0
@@ -26,7 +26,7 @@ do_update=1
 do_gen_keys=0
 output_mode=text
 mvplg_minor_min="3"
-mvplg_patch_min="5"
+mvplg_patch_min="6"
 
 # NOTE
 # This script assumes the build directory is called 'build' and exists
@@ -41,7 +41,7 @@ trap 'echo End of Line' SIGINT
 # FUNCTIONS
 show_help() {
     echo -e "Usage:\n"
-    echo -e "  ./deploy.sh /optional/path/to/Microvisor/app/bunde.zip\n"
+    echo -e "  ./deploy.sh /optional/path/to/Microvisor/app.bin\n"
     echo -e "Options:\n"
     echo "  --log / -l            After deployment, start log streaming. Default: no logging"
     echo "  --genkeys             Generate remote debugging keys"
@@ -113,12 +113,10 @@ check_prereqs() {
 }
 
 build_app() {
-    if [[ "${public_key_path}" != "NONE" ]]; then
-        cmake -S . -B build -D "RD_PUBLIC_KEYPATH:STRING=${public_key_path}"
-    else
-        cmake -S . -B build
-    fi
-
+    # Set up the build
+    cmake -S . -B build
+    
+    # Build the app itself
     if cmake --build build --clean-first 2>&1 ; then
         echo "App built"
     else
@@ -193,7 +191,7 @@ for arg in "$@"; do
     elif [[ "${arg:0:1}" = "-" ]]; then
         show_error_and_exit "Unknown command: ${arg}"
     else
-        zip_path="${arg}"
+        bin_path="${arg}"
     fi
 done
 
@@ -239,10 +237,23 @@ if [[ ${do_build} -eq 1 ]]; then
 fi
 
 if [[ ${do_deploy} -eq 1 ]]; then
-    # Check we have what looks like a bundle
-    extension="${zip_path##*.}"
-    if [[ "${extension}" != "zip" ]]; then
-        show_error_and_exit "${zip_path} does not indicate a .zip file"
+    # FROM 1.8.0 -- Bundle the .bin with the MV Plugin
+    # Check we have what looks like a .bin
+    extension="${bin_path##*.}"
+    if [[ "${extension}" != "bin" ]]; then
+        show_error_and_exit "${bin_path} does not indicate a .bin file"
+    fi
+    
+    # Bundle the .bin
+    zip_path="${bin_path%%.*}.zip"
+    if [[ "${public_key_path}" != "NONE" ]]; then
+        if ! twilio microvisor:apps:bundle "${bin_path}" "${zip_path}" --debug-auth-pubkey "${public_key_path}" 2>&1 ; then
+            exit 1
+        fi
+    else
+        if ! twilio microvisor:apps:bundle "${bin_path}" "${zip_path}" 2>&1 ; then
+            exit 1
+        fi
     fi
 
     # Try to upload the bundle

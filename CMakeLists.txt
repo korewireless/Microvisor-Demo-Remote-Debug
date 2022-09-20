@@ -5,7 +5,6 @@ set(PROJECT_NAME "mv-remote-debug-demo")
 
 # Set to 0 to build without remote debugging enabled
 set(ENABLE_REMOTE_DEBUGGING 1)
-set(PUB_KEY_PATH "debug_auth_pub_key.pem")
 
 # Set to false to stop '[DEBUG]' messages being logged
 add_compile_definitions(LOG_DEBUG_MESSAGES=true)

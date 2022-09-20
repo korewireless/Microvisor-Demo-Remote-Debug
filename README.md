@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 2.0.2
+# Twilio Microvisor Remote Debugging Demo 2.0.3
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -52,9 +52,8 @@ This project is written in C. At this time, we only support Ubuntu 20.0.4. Users
 Under Ubuntu, run the following:
 
 ```bash
-sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi git \
-                 python3 python3-pip build-essential protobuf-compiler \
-                 cmake libsecret-1-dev curl jq openssl gdb-multiarch
+sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi \
+  git curl build-essential cmake libsecret-1-dev jq openssl
 ```
 
 Now run:
