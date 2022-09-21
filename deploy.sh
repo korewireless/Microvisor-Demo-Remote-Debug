@@ -26,7 +26,7 @@ do_update=1
 do_gen_keys=0
 output_mode=text
 mvplg_minor_min="3"
-mvplg_patch_min="6"
+mvplg_patch_min="7"
 
 # NOTE
 # This script assumes the build directory is called 'build' and exists

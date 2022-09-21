@@ -73,8 +73,6 @@ sudo apt install -y twilio
 Close your terminal window or tab, and open a new one. Now run:
 
 ```bash
-nvm install --lts
-npm install twilio-cli -g
 twilio plugins:install @twilio/plugin-microvisor
 ```
 
