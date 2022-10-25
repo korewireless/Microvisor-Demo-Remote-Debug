@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.3
+ * Version 2.0.4
  * Copyright © 2022, Twilio
  * Licence: Apache 2.0
  *
@@ -29,9 +29,10 @@ struct {
 volatile bool received_request = false;
 volatile uint8_t item_number = 1;
 
-// Central store for notification records.
-// Holds one record at a time -- each record is 16 bytes.
-volatile struct MvNotification http_notification_center[16];
+// Central store for HTTP request management notification records.
+// Holds four records at a time -- each record is 16 bytes in size.
+volatile struct MvNotification http_notification_center[4];
+volatile struct MvNotification* notification_ptr = http_notification_center;
 
 
 /**
