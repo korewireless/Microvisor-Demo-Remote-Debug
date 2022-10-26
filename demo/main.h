@@ -48,21 +48,12 @@ extern "C" {
 
 #define     HTTP_RX_BUFFER_SIZE_B       1536
 #define     HTTP_TX_BUFFER_SIZE_B       512
+#define     HTTP_NT_BUFFER_SIZE_R       8             // NOTE Size in records, not bytes
 
 
 /*
  * PROTOTYPES
  */
-void        gpio_init(void);
-
-void        http_channel_center_setup(void);
-bool        http_open_channel(void);
-void        http_close_channel(void);
-bool        http_send_request();
-void        http_process_response(void);
-
-void        log_device_info(void);
-
 void        debug_function_parent(uint32_t* vptr);
 bool        debug_function_child(uint32_t* vptr);
 

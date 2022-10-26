@@ -9,7 +9,19 @@
 #include "main.h"
 
 
-/**
+/*
+ * STATIC PROTOTYPES
+ */
+static void gpio_init(void);
+static void http_channel_center_setup(void);
+static bool http_open_channel(void);
+static void http_close_channel(void);
+static bool http_send_request();
+static void http_process_response(void);
+static void log_device_info(void);
+
+
+/*
  *  GLOBALS
  */
 
@@ -30,9 +42,9 @@ volatile bool received_request = false;
 volatile uint8_t item_number = 1;
 
 // Central store for HTTP request management notification records.
-// Holds four records at a time -- each record is 16 bytes in size.
-volatile struct MvNotification http_notification_center[4];
-volatile struct MvNotification* notification_ptr = http_notification_center;
+// Holds HTTP_NT_BUFFER_SIZE_R records at a time -- each record is 16 bytes in size.
+volatile struct MvNotification http_notification_center[HTTP_NT_BUFFER_SIZE_R] __attribute__((aligned(8)));
+volatile uint32_t current_notification_index = 0;
 
 
 /**
@@ -55,7 +67,7 @@ int main(void) {
     uint64_t tick = 0;
 
     // HTTP channel management
-    bool close_channel = false;
+    bool do_close_channel = false;
 
     // Remote debug demo variables
     uint32_t store = 42;
@@ -86,7 +98,7 @@ int main(void) {
             // No channel open? Try and send the temperature
             if (http_handles.channel == 0 && http_open_channel()) {
                 bool result = http_send_request();
-                if (!result) close_channel = true;
+                if (!result) do_close_channel = true;
                 kill_tick = tick;
             } else {
                 server_error("Channel handle not zero");
@@ -103,13 +115,13 @@ int main(void) {
         // Use 'kill_tick' to force-close an open HTTP channel
         // if it's been left open too long
         if (kill_tick > 0 && tick - kill_tick > CHANNEL_KILL_PERIOD_US) {
-            close_channel = true;
+            do_close_channel = true;
         }
 
         // If we've received a response in an interrupt handler,
         // we can close the HTTP channel for the time being
-        if (received_request || close_channel) {
-            close_channel = false;
+        if (received_request || do_close_channel) {
+            do_close_channel = false;
             received_request = false;
             kill_tick = 0;
             http_close_channel();
@@ -123,7 +135,7 @@ int main(void) {
  *
  * Used to flash the Nucleo's USER LED, which is on GPIO Pin PA5.
  */
-void gpio_init(void) {
+static void gpio_init(void) {
     // Enable GPIO port clock
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -166,7 +178,7 @@ bool debug_function_child(uint32_t* vptr) {
  *
  *  @retval `true` if the channel is open, otherwise `false`.
  */
-bool http_open_channel(void) {
+static bool http_open_channel(void) {
     // Set up the HTTP channel's multi-use send and receive buffers
     static volatile uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
     static volatile uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
@@ -213,7 +225,7 @@ bool http_open_channel(void) {
 /**
  *  @brief Close the currently open HTTP channel.
  */
-void http_close_channel(void) {
+static void http_close_channel(void) {
     // If we have a valid channel handle -- ie. it is non-zero --
     // then ask Microvisor to close it and confirm acceptance of
     // the closure request.
@@ -231,7 +243,7 @@ void http_close_channel(void) {
 /**
  * @brief Configure the channel Notification Center.
  */
-void http_channel_center_setup(void) {
+static void http_channel_center_setup(void) {
     // Clear the notification store
     memset((void *)http_notification_center, 0xFF, sizeof(http_notification_center));
 
@@ -259,7 +271,7 @@ void http_channel_center_setup(void) {
  *
  * @returns `true` if the request was accepted by Microvisor, otherwise `false`
  */
-bool http_send_request() {
+static bool http_send_request() {
     // Make sure we have a valid channel handle
     if (http_handles.channel != 0) {
         server_log("Sending HTTP request");
@@ -313,14 +325,21 @@ bool http_send_request() {
  *  and extract HTTP response data when it is available.
  */
 void TIM8_BRK_IRQHandler(void) {
-    // Get the event type
-    enum MvEventType event_kind = http_notification_center->event_type;
-
-    if (event_kind == MV_EVENTTYPE_CHANNELDATAREADABLE) {
+    // Check for a suitable event: readable data in the channel
+    volatile struct MvNotification notification = http_notification_center[current_notification_index];
+    if (notification.event_type == MV_EVENTTYPE_CHANNELDATAREADABLE) {
         // Flag we need to access received data and to close the HTTP channel
         // when we're back in the main loop. This lets us exit the ISR quickly.
         // We should not make Microvisor System Calls in the ISR.
         received_request = true;
+
+        // Point to the next record to be written
+        current_notification_index++;
+        if (current_notification_index == HTTP_NT_BUFFER_SIZE_R) current_notification_index = 0;
+
+        // Clear the current notifications event
+        // See https://www.twilio.com/docs/iot/microvisor/microvisor-notifications#buffer-overruns
+        notification.event_type = 0;
     }
 }
 
@@ -328,7 +347,7 @@ void TIM8_BRK_IRQHandler(void) {
 /**
  * @brief Process HTTP response data
  */
-void http_process_response(void) {
+static void http_process_response(void) {
     // We have received data via the active HTTP channel so establish
     // an `MvHttpResponseData` record to hold response metadata
     static struct MvHttpResponseData resp_data;
@@ -349,7 +368,6 @@ void http_process_response(void) {
                 if (status == MV_STATUS_OKAY) {
                     // Retrieved the body data successfully so log it
                     server_log("Message JSON:\n%s", buffer);
-                    //output_headers(resp_data.num_headers);
                 } else {
                     server_error("HTTP response body read status %i", status);
                 }
@@ -368,8 +386,8 @@ void http_process_response(void) {
 /**
  * @brief Show basic device info.
  */
-void log_device_info(void) {
+static void log_device_info(void) {
     uint8_t buffer[35] = { 0 };
     mvGetDeviceId(buffer, 34);
-    server_log("Device: %s\n   App: %s %s\n Build: %i", buffer, APP_NAME, APP_VERSION, BUILD_NUM);
+    server_log("\nDevice: %s\n   App: %s %s\n Build: %i", buffer, APP_NAME, APP_VERSION, BUILD_NUM);
 }

@@ -9,6 +9,18 @@
 #include "main.h"
 
 
+/*
+ * STATIC PROTOTYPES
+ */
+static void net_open_network(void);
+static void net_notification_center_setup(void);
+static void log_start(void);
+static void log_service_setup(void);
+
+
+/*
+ * GLOBALS
+ */
 // Central store for Microvisor resource handles used in this code.
 // See 'https://www.twilio.com/docs/iot/microvisor/syscalls#handles'
 struct {
@@ -18,8 +30,8 @@ struct {
 } net_handles = { 0, 0, 0 };
 
 // Central store for network management notification records.
-// Holds four records at a time -- each record is 16 bytes in size.
-static volatile struct MvNotification net_notification_buffer[4];
+// Holds eight records at a time -- each record is 16 bytes in size.
+static volatile struct MvNotification net_notification_buffer[8] __attribute__((aligned(8)));
 
 const uint32_t log_buffer_size = 4096;
 static uint8_t log_buffer[4096] __attribute__((aligned(512))) = {0} ;
@@ -31,7 +43,7 @@ static uint8_t log_buffer[4096] __attribute__((aligned(512))) = {0} ;
  * Open a data channel for Microvisor logging.
  * This call will also request a network connection.
  */
-void log_start(void) {
+static void log_start(void) {
     // Initiate the Microvisor logging service
     log_service_setup();
     
@@ -44,7 +56,7 @@ void log_start(void) {
 /**
  * @brief Configure and connect to the network.
  */
-void net_open_network() {
+static void net_open_network() {
     // Configure the network's notification center
     net_notification_center_setup();
     
@@ -87,7 +99,7 @@ void net_open_network() {
 /**
  * @brief Configure the network Notification Center.
  */
-void net_notification_center_setup() {
+static void net_notification_center_setup() {
     if (net_handles.notification == 0) {
         // Clear the notification store
         memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
@@ -114,7 +126,7 @@ void net_notification_center_setup() {
 /**
  * @brief Initiate Microvisor application logging.
  */
-void log_service_setup(void) {
+static void log_service_setup(void) {
     if (net_handles.log == 0) {
         // Initialse logging with the standard system call
         enum MvStatus status = mvServerLoggingInit(log_buffer, log_buffer_size);
