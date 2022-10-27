@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2022, Twilio
-# @version   1.8.0
+# @version   1.8.1
 # @license   MIT
 #
 
@@ -46,12 +46,12 @@ show_help() {
     echo "  --log / -l            After deployment, start log streaming. Default: no logging"
     echo "  --genkeys             Generate remote debugging keys"
     echo "  --publickey {path}    /path/to/remote/debugging/public/key.pem"
-    echo "                        Must be a pre-generated file if you do not include --gen-keys"
+    echo "                        Must be a pre-generated file if you do not include --genkeys"
     echo "  --privatekey {path}   /path/to/remote/debugging/private/key.pem"
-    echo "                        Must be a pre-generated file if you do not include --gen-keys"
+    echo "                        Must be a pre-generated file if you do not include --genkeys"
     echo "  --deploy / -d         Deploy without a build"
     echo "  --logonly             Start log streaming immediately; do not build or deploy"
-    echo "  --output / -o {mode}  Log output mode: \'text\` or \`json\`"
+    echo "  --output / -o {mode}  Log output mode: \`text\` or \`json\`"
     echo "  --help / -h           Show this help screen"
     echo
 }
@@ -115,7 +115,7 @@ check_prereqs() {
 build_app() {
     # Set up the build
     cmake -S . -B build
-    
+
     # Build the app itself
     if cmake --build build --clean-first 2>&1 ; then
         echo "App built"
@@ -243,7 +243,7 @@ if [[ ${do_deploy} -eq 1 ]]; then
     if [[ "${extension}" != "bin" ]]; then
         show_error_and_exit "${bin_path} does not indicate a .bin file"
     fi
-    
+
     # Bundle the .bin
     zip_path="${bin_path%%.*}.zip"
     if [[ "${public_key_path}" != "NONE" ]]; then
