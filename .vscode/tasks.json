@@ -50,7 +50,7 @@
         {
             "label": "prereqs_check",
             "type": "shell",
-            "command": "[[ $(which twilio) && $(echo $(twilio plugins) | grep microvisor) ]] || exit 1",
+            "command": "which twilio > /dev/null 2>&1 && echo $(twilio plugins) | grep microvisor > /dev/null 2>&1",
             "isBackground": false
         }
     ]
