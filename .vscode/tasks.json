@@ -5,6 +5,7 @@
             "label": "start_gdb_server",
             "dependsOrder": "sequence",
             "dependsOn": [
+                "prereqs_check",
                 "generate_keys",
                 "build_app",
                 "deploy_delay",
@@ -44,6 +45,12 @@
             "label": "generate_keys",
             "type": "shell",
             "command": "twilio microvisor:debug:generate_keypair --debug-auth-privkey $HOME/pvkey.pem --debug-auth-pubkey $HOME/pukey.pem --force",
+            "isBackground": false
+        },
+        {
+            "label": "prereqs_check",
+            "type": "shell",
+            "command": "[[ $(which twilio) && $(echo $(twilio plugins) | grep microvisor) ]] || exit 1",
             "isBackground": false
         }
     ]

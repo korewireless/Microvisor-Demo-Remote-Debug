@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 2.0.4
+# Twilio Microvisor Remote Debugging Demo 2.0.5
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -6,9 +6,13 @@ The application code files can be found in the [demo/](demo/) directory. The [ST
 
 This repo contains a `.gdbinit` file which sets the remote target to localhost on port 8001 to match the Twilio CLI Microvisor plugin remote debugging defaults. To enable this file, add `set auto-load safe-path .` to your `~/.gdbinit` file, creating one if necessary.
 
+It also contains a `.vscode` directory containing configuration files to support running the demo using [Visual Studio Code](https://code.visualstudio.com/).
+
 ## Release Notes
 
 Version 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
+
+Version 2.0.5 makes no software changes, but adds Visual Studio Code debugging support.
 
 ## Cloning the Repo
 
@@ -93,7 +97,6 @@ Enter the following command to get your target device’s SID and, if set, its u
 ```bash
 twilio api:microvisor:v1:devices:list
 ```
-
 
 ## Build and deploy the application
 
@@ -219,7 +222,7 @@ Value returned is $2 = true
 
 Over to you. Use the GDB tools you’ve just demo’d to add some more breakpoints to the code, and step through some of the other parts of the application. To get a list of breakpoints at any time, enter `info breakpoints`.
 
-For more guidance on making use of GDB, see the guide [**Microvisor Remote Debugging**](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging) in the Twilio docs.
+For more guidance on making use of GDB, see the guide [**Microvisor Remote Debugging**](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging) in the Twilio docs. It also covers Visual Studio Code usage.
 
 ## Copyright and Licensing
 
