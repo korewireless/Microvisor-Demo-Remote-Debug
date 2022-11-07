@@ -12,7 +12,7 @@ It also contains a `.vscode` directory containing configuration files to support
 
 Version 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
 
-Version 2.0.5 makes no software changes, but adds Visual Studio Code debugging support.
+Version 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
 
 ## Cloning the Repo
 
