@@ -1,8 +1,8 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.5
- * Copyright © 2022, Twilio
+ * Version 2.0.6
+ * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
  */
@@ -29,6 +29,7 @@
 
 // App includes
 #include "logging.h"
+#include "uart_logging.h"
 
 
 #ifdef __cplusplus

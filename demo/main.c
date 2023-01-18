@@ -1,8 +1,8 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.5
- * Copyright © 2022, Twilio
+ * Version 2.0.6
+ * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
  */
@@ -51,6 +51,7 @@ volatile uint32_t current_notification_index = 0;
  *  @brief The application entry point.
  */
 int main(void) {
+    
     // Initialize peripherals
     gpio_init();
 
@@ -136,6 +137,7 @@ int main(void) {
  * Used to flash the Nucleo's USER LED, which is on GPIO Pin PA5.
  */
 static void gpio_init(void) {
+    
     // Enable GPIO port clock
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -156,6 +158,7 @@ static void gpio_init(void) {
  *  @brief Sequence-oriented function to demo remote debugging #1.
  */
 void debug_function_parent(uint32_t* vptr) {
+    
     uint32_t test_var = *vptr;
     debug_function_child(&test_var);
     *vptr = test_var;
@@ -168,6 +171,7 @@ void debug_function_parent(uint32_t* vptr) {
  *  @retval Always `true`, to demo return values.
  */
 bool debug_function_child(uint32_t* vptr) {
+    
     (*vptr)++;
     return true;
 }
@@ -179,6 +183,7 @@ bool debug_function_child(uint32_t* vptr) {
  *  @retval `true` if the channel is open, otherwise `false`.
  */
 static bool http_open_channel(void) {
+    
     // Set up the HTTP channel's multi-use send and receive buffers
     static volatile uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
     static volatile uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
@@ -226,6 +231,7 @@ static bool http_open_channel(void) {
  *  @brief Close the currently open HTTP channel.
  */
 static void http_close_channel(void) {
+    
     // If we have a valid channel handle -- ie. it is non-zero --
     // then ask Microvisor to close it and confirm acceptance of
     // the closure request.
@@ -244,6 +250,7 @@ static void http_close_channel(void) {
  * @brief Configure the channel Notification Center.
  */
 static void http_channel_center_setup(void) {
+    
     // Clear the notification store
     memset((void *)http_notification_center, 0xFF, sizeof(http_notification_center));
 
@@ -272,6 +279,7 @@ static void http_channel_center_setup(void) {
  * @returns `true` if the request was accepted by Microvisor, otherwise `false`
  */
 static bool http_send_request() {
+    
     // Make sure we have a valid channel handle
     if (http_handles.channel != 0) {
         server_log("Sending HTTP request");
@@ -307,8 +315,11 @@ static bool http_send_request() {
         }
 
         // Report send failure
-        server_error("Could not issue request. Status: %i", status);
-        return false;
+        if (status == 15) {
+            server_error("HTTP channel closed unexpectedly");
+        } else {
+            server_error("Could not issue request. Status: %i", status);
+        }
     }
 
     // There's no open channel, so open open one now and
@@ -325,6 +336,7 @@ static bool http_send_request() {
  *  and extract HTTP response data when it is available.
  */
 void TIM8_BRK_IRQHandler(void) {
+    
     // Check for a suitable event: readable data in the channel
     volatile struct MvNotification notification = http_notification_center[current_notification_index];
     if (notification.event_type == MV_EVENTTYPE_CHANNELDATAREADABLE) {
@@ -347,6 +359,7 @@ void TIM8_BRK_IRQHandler(void) {
  * @brief Process HTTP response data
  */
 static void http_process_response(void) {
+    
     // We have received data via the active HTTP channel so establish
     // an `MvHttpResponseData` record to hold response metadata
     static struct MvHttpResponseData resp_data;
@@ -386,7 +399,10 @@ static void http_process_response(void) {
  * @brief Show basic device info.
  */
 static void log_device_info(void) {
+    
     uint8_t buffer[35] = { 0 };
     mvGetDeviceId(buffer, 34);
-    server_log("\nDevice: %s\n   App: %s %s\n Build: %i", buffer, APP_NAME, APP_VERSION, BUILD_NUM);
+    server_log("Device: %s", buffer);
+    server_log("   App: %s %s", APP_NAME, APP_VERSION);
+    server_log(" Build: %i", BUILD_NUM);
 }

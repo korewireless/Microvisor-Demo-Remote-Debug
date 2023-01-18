@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 2.0.5
+# Twilio Microvisor Remote Debugging Demo 2.0.6
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -10,9 +10,11 @@ It also contains a `.vscode` directory containing configuration files to support
 
 ## Release Notes
 
-Version 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
+Version 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
 
 Version 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
+
+Version 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
 
 ## Cloning the Repo
 
@@ -43,13 +45,43 @@ We recommend following this by deleting your `build` directory.
 
 You will need a Twilio account. [Sign up now if you don’t have one](https://www.twilio.com/try-twilio).
 
-You will also need a Twilio Microvisor Nucleo Development Board. These are currently only available to Private Beta program participants.
+You will also need a Twilio Microvisor Nucleo Development Board.
 
 ## Software Setup
 
-This project is written in C. At this time, we only support Ubuntu 20.0.4. Users of other operating systems should build the code under a virtual machine running Ubuntu.
+This project is written in C. At this time, we only support Ubuntu 20.0.4. Users of other operating systems should build the code under a virtual machine running Ubuntu, or with Docker.
 
-**Note** macOS users may attempt to install the pre-requisites below using [Homebrew](https://brew.sh). This is not supported, but should work. You may need to change the names of a few of the packages listed in the `apt install` command below, and always change `sudo apt install <package>` to `brew install <package>`.
+**Note** Users of unsupported platforms may attempt to install the Microvisor toolchain using [this guidance](https://www.twilio.com/docs/iot/microvisor/install-microvisor-app-development-tools-on-unsupported-platforms).
+
+### Docker
+
+If you are running on an architecture other than x86/amd64 (such as a Mac with Apple silicon), you will need to override the platform when running docker. This is needed for the Twilio CLI apt package which is x86 only at this time:
+
+```shell
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
+```
+
+Build the image:
+
+```shell
+docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t mv-rd-demo-image .
+```
+
+Run the build:
+
+```
+[INFO][LocationDriver] Couldn't get location using BLE devices: Couldn't scan BLE devices: Initialization failure: Timeout waiting for the expected data or an acknowledge
+
+```
+docker run -it --rm -v $(pwd)/:/home/mvisor/project/ \
+  --name mv-rd-demo \
+  mv-rd-demo-image \
+  --entrypoint /bin/bash
+```
+
+**Note** You will need to have exported certain environment variables, as [detailed below](#environment-variables).
+
+Under Docker, the demo is compiled, uploaded and deployed to your development board.
 
 ### Libraries and Tools
 
@@ -119,6 +151,10 @@ COMPLETE
 ```
 
 which indicate the version of the application with your remote debugging public key is now running on the device and ready for remote debugging.
+
+## UART Logging
+
+Version 2.0.6 adds optional logging over UART on pin PD5 — pin 41 in bank CN11 on the Microvisor Nucleo Development Board. To use this mode, which is intended as an alternative to application logging, typically when a device is disconnected, connect a 3V3 FTDI USB-to-Serial adapter cable’s RX pin to PD5, and a GND pin to any Nucleo GND pin. Whether you do this or not, the application will continue to log via the Internet.
 
 ## A short GDB tutorial
 
@@ -226,6 +262,6 @@ For more guidance on making use of GDB, see the guide [**Microvisor Remote Debug
 
 ## Copyright and Licensing
 
-The sample code and Microvisor SDK is © 2022, Twilio, Inc. It is licensed under the terms of the [Apache 2.0 License](./LICENSE).
+The sample code and Microvisor SDK is © 2023, Twilio, Inc. It is licensed under the terms of the [Apache 2.0 License](./LICENSE).
 
 The SDK makes used of code © 2022, STMicroelectronics and affiliates. This code is licensed under terms described in [this file](https://github.com/twilio/twilio-microvisor-hal-stm32u5/blob/main/LICENSE-STM32CubeU5.md).

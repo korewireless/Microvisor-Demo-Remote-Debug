@@ -6,7 +6,7 @@
 # Upload and deploy Microvisor application code
 #
 # @author    Tony Smith
-# @copyright 2022, Twilio
+# @copyright 2023, Twilio
 # @version   1.8.1
 # @license   MIT
 #
