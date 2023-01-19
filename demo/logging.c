@@ -27,7 +27,7 @@ struct {
     MvNotificationHandle notification;
     MvNetworkHandle      network;
     uint32_t             log;
-} net_handles = { 0, 0, 0 };
+} logging_handles = { 0, 0, 0 };
 
 // Central store for network management notification records.
 // Holds eight records at a time -- each record is 16 bytes in size.
@@ -66,6 +66,22 @@ static void log_start(void) {
 
 
 /**
+ * @brief Initiate Microvisor application logging.
+ */
+static void log_service_setup(void) {
+    
+    if (logging_handles.log != USER_HANDLE_LOGGING_STARTED) {
+        // Initialize logging with the standard system call
+        enum MvStatus status = mvServerLoggingInit(log_buffer, log_buffer_size);
+
+        // Set a mock handle as a proxy for a 'logging enabled' flag
+        if (status == MV_STATUS_OKAY) logging_handles.log = USER_HANDLE_LOGGING_STARTED;
+        assert(status == MV_STATUS_OKAY);
+    }
+}
+
+
+/**
  * @brief Configure and connect to the network.
  */
 static void net_open_network() {
@@ -73,19 +89,19 @@ static void net_open_network() {
     // Configure the network's notification center
     net_notification_center_setup();
 
-    if (net_handles.network == 0) {
+    if (logging_handles.network == 0) {
         // Configure the network connection request
         struct MvRequestNetworkParams network_config = {
             .version = 1,
             .v1 = {
-                .notification_handle = net_handles.notification,
+                .notification_handle = logging_handles.notification,
                 .notification_tag = USER_TAG_LOGGING_REQUEST_NETWORK,
             }
         };
 
         // Ask Microvisor to establish the network connection
         // and confirm that it has accepted the request
-        enum MvStatus status = mvRequestNetwork(&network_config, &net_handles.network);
+        enum MvStatus status = mvRequestNetwork(&network_config, &logging_handles.network);
         assert(status == MV_STATUS_OKAY);
 
         // The network connection is established by Microvisor asynchronously,
@@ -95,7 +111,7 @@ static void net_open_network() {
         while (1) {
             // Request the status of the network connection, identified by its handle.
             // If we're good to continue, break out of the loop...
-            if (mvGetNetworkStatus(net_handles.network, &net_status) == MV_STATUS_OKAY && net_status == MV_NETWORKSTATUS_CONNECTED) {
+            if (mvGetNetworkStatus(logging_handles.network, &net_status) == MV_STATUS_OKAY && net_status == MV_NETWORKSTATUS_CONNECTED) {
                 break;
             }
 
@@ -114,7 +130,7 @@ static void net_open_network() {
  */
 static void net_notification_center_setup() {
     
-    if (net_handles.notification == 0) {
+    if (logging_handles.notification == 0) {
         // Clear the notification store
         memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
 
@@ -127,28 +143,12 @@ static void net_notification_center_setup() {
 
         // Ask Microvisor to establish the notification center
         // and confirm that it has accepted the request
-        enum MvStatus status = mvSetupNotifications(&net_notification_config, &net_handles.notification);
+        enum MvStatus status = mvSetupNotifications(&net_notification_config, &logging_handles.notification);
         assert(status == MV_STATUS_OKAY);
 
         // Start the notification IRQ
         NVIC_ClearPendingIRQ(TIM1_BRK_IRQn);
         NVIC_EnableIRQ(TIM1_BRK_IRQn);
-    }
-}
-
-
-/**
- * @brief Initiate Microvisor application logging.
- */
-static void log_service_setup(void) {
-    
-    if (net_handles.log != USER_HANDLE_LOGGING_STARTED) {
-        // Initialize logging with the standard system call
-        enum MvStatus status = mvServerLoggingInit(log_buffer, log_buffer_size);
-
-        // Set a mock handle as a proxy for a 'logging enabled' flag
-        if (status == MV_STATUS_OKAY) net_handles.log = USER_HANDLE_LOGGING_STARTED;
-        assert(status == MV_STATUS_OKAY);
     }
 }
 
@@ -216,7 +216,7 @@ void do_log(bool is_err, char* format_string, va_list args) {
  */
 MvNetworkHandle get_net_handle(void) {
     
-    return net_handles.network;
+    return logging_handles.network;
 }
 
 
@@ -225,7 +225,7 @@ MvNetworkHandle get_net_handle(void) {
  */
 uint32_t get_log_handle(void) {
     
-    return net_handles.log;
+    return logging_handles.log;
 }
 
 

@@ -16,7 +16,8 @@ static void gpio_init(void);
 static void http_channel_center_setup(void);
 static bool http_open_channel(void);
 static void http_close_channel(void);
-static bool http_send_request();
+static enum MvStatus http_send_request(void);
+static void http_show_channel_closure(void);
 static void http_process_response(void);
 static void log_device_info(void);
 
@@ -39,6 +40,7 @@ struct {
  *  doesn't render them immutable at runtime
  */
 volatile bool received_request = false;
+volatile bool channel_was_closed = false;
 volatile uint8_t item_number = 1;
 
 // Central store for HTTP request management notification records.
@@ -66,6 +68,7 @@ int main(void) {
     uint64_t last_send_tick = 0;
     uint64_t last_led_flash_tick = 0;
     uint64_t tick = 0;
+    enum MvStatus result = MV_STATUS_OKAY;
 
     // HTTP channel management
     bool do_close_channel = false;
@@ -98,8 +101,8 @@ int main(void) {
 
             // No channel open? Try and send the temperature
             if (http_handles.channel == 0 && http_open_channel()) {
-                bool result = http_send_request();
-                if (!result) do_close_channel = true;
+                result = http_send_request();
+                if (result > 0) do_close_channel = true;
                 kill_tick = tick;
             } else {
                 server_error("Channel handle not zero");
@@ -109,8 +112,14 @@ int main(void) {
         }
 
         // Process a request's response if indicated by the ISR
-        if (received_request) {
-            http_process_response();
+        if (received_request) http_process_response();
+        
+        // FROM 2.0.6
+        // Was the channel closed unexpectedly?
+        // `channel_was_closed` set in IRS
+        if (channel_was_closed) {
+            http_show_channel_closure();
+            channel_was_closed = false;
         }
 
         // Use 'kill_tick' to force-close an open HTTP channel
@@ -219,10 +228,9 @@ static bool http_open_channel(void) {
     if (status == MV_STATUS_OKAY) {
         server_log("HTTP channel handle: %lu", (uint32_t)http_handles.channel);
         return true;
-    } else {
-        server_error("HTTP channel opening failed. Status: %i", status);
     }
-
+    
+    server_error("Could not open HTTP channel. Status: %i", status);
     return false;
 }
 
@@ -236,9 +244,10 @@ static void http_close_channel(void) {
     // then ask Microvisor to close it and confirm acceptance of
     // the closure request.
     if (http_handles.channel != 0) {
+        MvChannelHandle old = http_handles.channel;
         enum MvStatus status = mvCloseChannel(&http_handles.channel);
         assert((status == MV_STATUS_OKAY || status == MV_STATUS_CHANNELCLOSED) && "[ERROR] Channel closure");
-        server_log("HTTP channel closed");
+        server_log("HTTP channel %lu closed", (uint32_t)old);
     }
 
     // Confirm the channel handle has been invalidated by Microvisor
@@ -269,7 +278,7 @@ static void http_channel_center_setup(void) {
     // Start the notification IRQ
     NVIC_ClearPendingIRQ(TIM8_BRK_IRQn);
     NVIC_EnableIRQ(TIM8_BRK_IRQn);
-    server_log("Notification center handle: %lu", (uint32_t)http_handles.notification);
+    server_log("HTTP notification center handle: %lu", (uint32_t)http_handles.notification);
 }
 
 
@@ -278,7 +287,7 @@ static void http_channel_center_setup(void) {
  *
  * @returns `true` if the request was accepted by Microvisor, otherwise `false`
  */
-static bool http_send_request() {
+static enum MvStatus http_send_request(void) {
     
     // Make sure we have a valid channel handle
     if (http_handles.channel != 0) {
@@ -308,24 +317,53 @@ static bool http_send_request() {
         if (item_number > 9) item_number = 1;
 
         // Issue the request -- and check its status
-        enum MvStatus status = mvSendHttpRequest(http_handles.channel, &request_config);
+        enum MvStatus status = mvSendHttpRequest(handles.channel, &request_config);
         if (status == MV_STATUS_OKAY) {
             server_log("Request sent to Twilio");
-            return true;
-        }
-
-        // Report send failure
-        if (status == 15) {
-            server_error("HTTP channel closed unexpectedly");
+        } else if (status == MV_STATUS_CHANNELCLOSED) {
+            http_show_channel_closure();
         } else {
-            server_error("Could not issue request. Status: %i", status);
+            server_error("Could not issue HTTP request. Status: %i", status);
         }
+        
+        return status;
     }
 
     // There's no open channel, so open open one now and
     // try to send again
     http_open_channel();
     return http_send_request();
+}
+
+
+/**
+ *  @brief Display a reason for an unexpectedly closed channel.
+ */
+static void http_show_channel_closure(void) {
+    
+    // FROM 2.1.6
+    server_error("HTTP channel %lu closed unexpectedly", http_handles.channel);
+    enum MvClosureReason reason = 0;
+    if (mvGetChannelClosureReason(http_handles.channel, &reason) == MV_STATUS_OKAY) {
+        switch(reason) {
+            case 1:
+                server_error("The channel was closed by the server");
+                break;
+            case 2:
+                server_error("The server reset the channel");
+                break;
+            case 3:
+                server_error("The channel was closed because the network was disconnected");
+                break;
+            case 4:
+                server_error("The connection to the server was terminated due to an error");
+                break;
+            default:
+                server_error("Reason unknown");
+        }
+    } else {
+        server_error("Reason unknown");
+    }
 }
 
 
@@ -338,13 +376,22 @@ static bool http_send_request() {
 void TIM8_BRK_IRQHandler(void) {
     
     // Check for a suitable event: readable data in the channel
+    bool got_notification = false;
     volatile struct MvNotification notification = http_notification_center[current_notification_index];
     if (notification.event_type == MV_EVENTTYPE_CHANNELDATAREADABLE) {
         // Flag we need to access received data and to close the HTTP channel
         // when we're back in the main loop. This lets us exit the ISR quickly.
         // We should not make Microvisor System Calls in the ISR.
         received_request = true;
-
+        got_notification = true;
+    }
+    
+    if (notification.event_type == MV_EVENTTYPE_CHANNELNOTCONNECTED) {
+        channel_was_closed = true;
+        got_notification = true;
+    }
+    
+    if (got_notification) {
         // Point to the next record to be written
         current_notification_index = (current_notification_index + 1) % HTTP_NT_BUFFER_SIZE_R;
 
@@ -352,7 +399,7 @@ void TIM8_BRK_IRQHandler(void) {
         // See https://www.twilio.com/docs/iot/microvisor/microvisor-notifications#buffer-overruns
         notification.event_type = 0;
     }
-}
+ }
 
 
 /**
