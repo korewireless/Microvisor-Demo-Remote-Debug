@@ -35,7 +35,7 @@ uint32_t        get_log_handle(void);
 
 void            server_log(char* format_string, ...);
 void            server_error(char* format_string, ...);
-void            do_log(bool is_err, char* format_string, va_list args);
+void            do_assert(bool condition, char* message);
 
 
 #ifdef __cplusplus

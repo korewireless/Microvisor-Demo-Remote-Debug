@@ -9,7 +9,7 @@
 #include "main.h"
 
 
-UART_HandleTypeDef log_uart;
+static UART_HandleTypeDef log_uart;
 
 
 /**
