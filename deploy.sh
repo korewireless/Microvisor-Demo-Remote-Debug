@@ -7,7 +7,7 @@
 #
 # @author    Tony Smith
 # @copyright 2023, Twilio
-# @version   1.8.1
+# @version   1.8.2
 # @license   MIT
 #
 
@@ -50,6 +50,7 @@ show_help() {
     echo "  --privatekey {path}   /path/to/remote/debugging/private/key.pem"
     echo "                        Must be a pre-generated file if you do not include --genkeys"
     echo "  --deploy / -d         Deploy without a build"
+    echo "  --build / -b          Build but do not deploy"
     echo "  --logonly             Start log streaming immediately; do not build or deploy"
     echo "  --output / -o {mode}  Log output mode: \`text\` or \`json\`"
     echo "  --help / -h           Show this help screen"
@@ -185,6 +186,9 @@ for arg in "$@"; do
         do_gen_keys=1
     elif [[ "${check_arg}" = "--deploy" || "${check_arg}" = "-d" ]]; then
         do_build=0
+    # FROM 1.8.2
+    elif [[ "${check_arg}" = "--build" || "${check_arg}" = "-b" ]]; then
+        do_deploy=0
     elif [[ "${check_arg}" = "--help" || "${check_arg}" = "-h" ]]; then
         show_help
         exit 0
