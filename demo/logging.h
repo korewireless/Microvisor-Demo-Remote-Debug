@@ -25,6 +25,9 @@ extern "C" {
 #define     USER_HANDLE_LOGGING_STARTED         0xFFFF
 
 #define     LOG_MESSAGE_MAX_LEN_B               1024
+#define     LOG_BUFFER_SIZE_B                   4096
+
+#define     NET_NC_BUFFER_SIZE_R                8
 
 
 /*

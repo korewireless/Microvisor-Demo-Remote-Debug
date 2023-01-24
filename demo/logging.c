@@ -31,13 +31,12 @@ static struct {
 } logging_handles = { 0, 0, 0 };
 
 // Central store for network management notification records.
-// Holds eight records at a time -- each record is 16 bytes in size.
-static volatile struct MvNotification net_notification_buffer[8] __attribute__((aligned(8)));
+// Holds 'NET_NC_BUFFER_SIZE_R' records at a time -- each record is 16 bytes in size.
+static volatile struct MvNotification net_notification_buffer[NET_NC_BUFFER_SIZE_R] __attribute__((aligned(8)));
 static volatile uint32_t current_notification_idx = 0;
 
 // Entities for Microvisor application logging
-static const uint32_t log_buffer_size = 4096;
-static uint8_t log_buffer[4096] __attribute__((aligned(512))) = {0} ;
+static uint8_t log_buffer[LOG_BUFFER_SIZE_B] __attribute__((aligned(512))) = {0} ;
 
 // Entities for local serial logging
 // Declared in `uart_logging.c`
@@ -74,7 +73,7 @@ static void log_service_setup(void) {
     
     if (logging_handles.log != USER_HANDLE_LOGGING_STARTED) {
         // Initialize logging with the standard system call
-        enum MvStatus status = mvServerLoggingInit(log_buffer, log_buffer_size);
+        enum MvStatus status = mvServerLoggingInit(log_buffer, LOG_BUFFER_SIZE_B);
 
         // Set a mock handle as a proxy for a 'logging enabled' flag
         if (status == MV_STATUS_OKAY) logging_handles.log = USER_HANDLE_LOGGING_STARTED;
