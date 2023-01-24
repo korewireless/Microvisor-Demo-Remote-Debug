@@ -120,7 +120,9 @@ int main(void) {
         if (channel_was_closed) {
             enum MvClosureReason reason = 0;
             if (mvGetChannelClosureReason(http_handles.channel, &reason) == MV_STATUS_OKAY) {
-                server_log("Closure reason: %lu", (uint32_t)reason);
+                server_error("Channel closed for reason: %lu", (uint32_t)reason);
+            } else {
+                server_error("channel closed for unknown reason");
             }
             
             channel_was_closed = false;
@@ -130,8 +132,8 @@ int main(void) {
         // Use 'kill_tick' to force-close an open HTTP channel
         // if it's been left open too long
         if (kill_tick > 0 && tick - kill_tick > CHANNEL_KILL_PERIOD_US) {
-            do_close_channel = true;
             server_error("HTTP request timed out");
+            do_close_channel = true;
         }
 
         // If we've received a response in an interrupt handler,
@@ -336,8 +338,10 @@ static enum MvStatus http_send_request(void) {
     enum MvStatus status = mvSendHttpRequest(http_handles.channel, &request_config);
     if (status == MV_STATUS_OKAY) {
         server_log("Request sent to Twilio");
+    } else if (status == MV_STATUS_CHANNELCLOSED) {
+        server_error("HTTP channel %lu already closed", (uint32_t)http_handles.channel);
     } else {
-        server_error("Could not issue HTTP request. Status: %i", status);
+        server_error("Could not issue request. Status: %i", status);
     }
     
     return status;
