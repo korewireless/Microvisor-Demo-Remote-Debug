@@ -27,8 +27,7 @@ bool log_uart_init(void) {
 
     // Initialize the UART
     if (HAL_UART_Init(&log_uart) != HAL_OK) {
-      // Log error
-      server_log("Could not enable logging UART");
+      server_error("Could not enable logging UART");
       return false;
     }
 
@@ -52,8 +51,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
 
     // Initialize U5 peripheral clock
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-        // Log error
-        server_log("Could not enable logging UART clock");
+        server_error("Could not enable logging UART clock");
         return;
     }
 
@@ -104,7 +102,7 @@ void log_uart_output(char* buffer) {
     strftime(uart_buffer, 64, "%F %T.XXX ", gmtime(&sec));
     // Insert the millisecond time over the XXX
     sprintf(&uart_buffer[20], "%03u ", (unsigned)(msec % 1000));
-    size_t length = strlen(uart_buffer);
+    uint32_t length = strlen(uart_buffer);
     
     // Write the timestamp to the message
     sprintf(&uart_buffer[length], "%s\n", buffer);

@@ -339,7 +339,7 @@ static enum MvStatus http_send_request(void) {
     if (status == MV_STATUS_OKAY) {
         server_log("Request sent to Twilio");
     } else if (status == MV_STATUS_CHANNELCLOSED) {
-        server_error("HTTP channel %lu already closed", (uint32_t)http_handles.channel);
+        server_error("Could not issue request: HTTP channel %lu already closed", (uint32_t)http_handles.channel);
     } else {
         server_error("Could not issue request. Status: %i", status);
     }
