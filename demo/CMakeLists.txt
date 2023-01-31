@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
     main.c
     logging.c
     uart_logging.c
+    http.c
     stm32u5xx_hal_timebase_tim_template.c
 )
 
