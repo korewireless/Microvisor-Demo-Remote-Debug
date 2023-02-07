@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.6
+ * Version 3.0.0
  * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
@@ -47,14 +47,17 @@ int main(void) {
     // Reset of all peripherals, Initializes the Flash interface and the sys tick.
     HAL_Init();
 
-    // Initialize peripherals
-    gpio_init();
-
     // Get the Device ID and build number and log them
     log_device_info();
 
     // Set up channel notifications
-    http_notification_center_setup();
+    http_setup_notification_center();
+
+    // Start the network
+    net_open_network();
+    
+    // Initialize peripherals
+    gpio_init();
 
     // Tick counters
     uint64_t kill_tick = 0;

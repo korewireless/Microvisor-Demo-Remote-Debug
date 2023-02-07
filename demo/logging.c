@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.6
+ * Version 3.0.0
  * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
@@ -12,8 +12,6 @@
 /*
  * STATIC PROTOTYPES
  */
-static void net_open_network(void);
-static void net_notification_center_setup(void);
 static void log_start(void);
 static void log_service_setup(void);
 static void post_log(bool is_err, char* format_string, va_list args);
@@ -22,21 +20,9 @@ static void post_log(bool is_err, char* format_string, va_list args);
 /*
  * GLOBALS
  */
-// Central store for Microvisor resource handles used in this code.
-// See 'https://www.twilio.com/docs/iot/microvisor/syscalls#handles'
-static struct {
-    MvNotificationHandle notification;
-    MvNetworkHandle      network;
-    uint32_t             log;
-} logging_handles = { 0, 0, 0 };
-
-// Central store for network management notification records.
-// Holds 'NET_NC_BUFFER_SIZE_R' records at a time -- each record is 16 bytes in size.
-static volatile struct MvNotification net_notification_buffer[NET_NC_BUFFER_SIZE_R] __attribute__((aligned(8)));
-static volatile uint32_t current_notification_idx = 0;
-
 // Entities for Microvisor application logging
-static uint8_t log_buffer[LOG_BUFFER_SIZE_B] __attribute__((aligned(512))) = {0} ;
+static uint8_t log_buffer[LOG_BUFFER_SIZE_B] __attribute__((aligned(512))) = {0};
+static uint32_t log_state = USER_HANDLE_LOGGING_OFF;
 
 // Entities for local serial logging
 // Declared in `uart_logging.c`
@@ -52,17 +38,15 @@ static bool uart_available = false;
  */
 static void log_start(void) {
     
-    // Initiate the Microvisor logging service
-    log_service_setup();
-
-    // Connect to the network
-    // NOTE This connection spans logging and HTTP comms
-    net_open_network();
+    if (log_state != USER_HANDLE_LOGGING_STARTED) {
+        // Initiate the Microvisor logging service
+        log_service_setup();
 
 #if ENABLE_UART_DEBUGGING == true
-    // Establish UART logging
-    uart_available = log_uart_init();
+        // Establish UART logging
+        uart_available = log_uart_init();
 #endif
+    }
 }
 
 
@@ -71,87 +55,12 @@ static void log_start(void) {
  */
 static void log_service_setup(void) {
     
-    if (logging_handles.log != USER_HANDLE_LOGGING_STARTED) {
-        // Initialize logging with the standard system call
-        enum MvStatus status = mvServerLoggingInit(log_buffer, LOG_BUFFER_SIZE_B);
+    // Initialize logging with the standard system call
+    enum MvStatus status = mvServerLoggingInit(log_buffer, LOG_BUFFER_SIZE_B);
 
-        // Set a mock handle as a proxy for a 'logging enabled' flag
-        if (status == MV_STATUS_OKAY) logging_handles.log = USER_HANDLE_LOGGING_STARTED;
-        do_assert(status == MV_STATUS_OKAY, "Could not start logging");
-    }
-}
-
-
-/**
- * @brief Configure and connect to the network.
- */
-static void net_open_network(void) {
-    
-    // Configure the network's notification center
-    net_notification_center_setup();
-
-    if (logging_handles.network == 0) {
-        // Configure the network connection request
-        struct MvRequestNetworkParams network_config = {
-            .version = 1,
-            .v1 = {
-                .notification_handle = logging_handles.notification,
-                .notification_tag = USER_TAG_LOGGING_REQUEST_NETWORK,
-            }
-        };
-
-        // Ask Microvisor to establish the network connection
-        // and confirm that it has accepted the request
-        enum MvStatus status = mvRequestNetwork(&network_config, &logging_handles.network);
-        do_assert(status == MV_STATUS_OKAY, "Could not open network");
-
-        // The network connection is established by Microvisor asynchronously,
-        // so we wait for it to come up before opening the data channel -- which
-        // would fail otherwise
-        enum MvNetworkStatus net_status;
-        while (1) {
-            // Request the status of the network connection, identified by its handle.
-            // If we're good to continue, break out of the loop...
-            if (mvGetNetworkStatus(logging_handles.network, &net_status) == MV_STATUS_OKAY && net_status == MV_NETWORKSTATUS_CONNECTED) {
-                break;
-            }
-
-            // ... or wait a short period before retrying
-            for (volatile unsigned i = 0; i < 50000; ++i) {
-                // No op
-                __asm("nop");
-            }
-        }
-    }
-}
-
-
-/**
- * @brief Configure the network Notification Center.
- */
-static void net_notification_center_setup(void) {
-    
-    if (logging_handles.notification == 0) {
-        // Clear the notification store
-        memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
-
-        // Configure a notification center for network-centric notifications
-        static struct MvNotificationSetup net_notification_config = {
-            .irq = TIM1_BRK_IRQn,
-            .buffer = (struct MvNotification *)net_notification_buffer,
-            .buffer_size = sizeof(net_notification_buffer)
-        };
-
-        // Ask Microvisor to establish the notification center
-        // and confirm that it has accepted the request
-        enum MvStatus status = mvSetupNotifications(&net_notification_config, &logging_handles.notification);
-        do_assert(status == MV_STATUS_OKAY, "Could not start network NC");
-
-        // Start the notification IRQ
-        NVIC_ClearPendingIRQ(TIM1_BRK_IRQn);
-        NVIC_EnableIRQ(TIM1_BRK_IRQn);
-        server_log("Network NC handle: %lu", (uint32_t)logging_handles.notification);
-    }
+    // Set a mock handle as a proxy for a 'logging enabled' flag
+    if (status == MV_STATUS_OKAY) log_state = USER_HANDLE_LOGGING_STARTED;
+    do_assert(status == MV_STATUS_OKAY, "Could not start logging");
 }
 
 
@@ -196,7 +105,7 @@ void server_error(char* format_string, ...) {
  */
 static void post_log(bool is_err, char* format_string, va_list args) {
     
-    if (get_net_handle() == 0) log_start();
+    log_start();
     char buffer[LOG_MESSAGE_MAX_LEN_B] = {0};
 
     // Write the message type to the message
@@ -210,38 +119,6 @@ static void post_log(bool is_err, char* format_string, va_list args) {
 
     // Do we output via UART too?
     if (uart_available) log_uart_output(buffer);
-}
-
-
-/**
- * @brief Provide the current network handle.
- *
- * @returns The network handle.
- */
-MvNetworkHandle get_net_handle(void) {
-    
-    return logging_handles.network;
-}
-
-
-/**
- * @brief Provide the current logging handle.
- *
- * @returns The logging handle.
- */
-uint32_t get_log_handle(void) {
-    
-    return logging_handles.log;
-}
-
-
-/**
- * @brief Network notification ISR.
- */
-void TIM1_BRK_IRQHandler(void) {
-    
-    // Network notifications interrupt service handler
-    // Add your own notification processing code here
 }
 
 

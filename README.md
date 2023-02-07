@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 2.0.6
+# Twilio Microvisor Remote Debugging Demo 3.0.0
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -9,6 +9,8 @@ This repo contains a `.gdbinit` file which sets the remote target to localhost o
 It also contains a `.vscode` directory containing configuration files to support running the demo using [Visual Studio Code](https://code.visualstudio.com/).
 
 ## Release Notes
+
+Version 3.0.0 requires Microvisor kernel 0.5.0 or above.
 
 Version 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
 
