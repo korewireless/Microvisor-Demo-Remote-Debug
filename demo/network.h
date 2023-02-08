@@ -19,7 +19,7 @@ extern "C" {
  * PROTOTYPES
  */
 void            net_open_network(void);
-MvNetworkHandle get_net_handle(void);
+MvNetworkHandle net_get_handle(void);
 
 
 #ifdef __cplusplus

@@ -44,7 +44,7 @@ bool http_open_channel(void) {
     // Get the network channel handle.
     // NOTE This is set in `logging.c` which puts the network in place
     //      (ie. so the network handle != 0) well in advance of this being called
-    http_handles.network = get_net_handle();
+    http_handles.network = net_get_handle();
     if (http_handles.network == 0) return false;
     server_log("Network handle: %lu", (uint32_t)http_handles.network);
 

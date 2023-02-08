@@ -109,7 +109,7 @@ static void net_setup_notification_center(void) {
  *
  * @returns The network handle.
  */
-MvNetworkHandle get_net_handle(void) {
+MvNetworkHandle net_get_handle(void) {
     
     return net_handles.network;
 }
