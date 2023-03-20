@@ -10,7 +10,7 @@ It also contains a `.vscode` directory containing configuration files to support
 
 ## Release Notes
 
-* 3.0.0 requires Microvisor kernel 0.5.0 or above.
+* 3.0.0 requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
 * 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
 * 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
 * 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
@@ -134,7 +134,7 @@ twilio api:microvisor:v1:devices:list
 Run:
 
 ```bash
-./deploy.sh --log --genkeys
+twilio microvisor:deploy . --devicesid ${MV_DEVICE_SID} --log --genkeys
 ```
 
 This will build the demo, upload the build, and stage it for deployment to your device. If you encounter errors, please check your stored Twilio credentials.
