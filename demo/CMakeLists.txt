@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set application data
 set(APP "Microvisor Remote Debug Demo")
-set(VERSION_NUMBER "2.0.6")
+set(VERSION_NUMBER "3.0.0")
 set(BUILD_NUMBER "0")
 
 message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
@@ -14,10 +14,11 @@ add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}
-    main.c
-    logging.c
-    uart_logging.c
     http.c
+    logging.c
+    main.c
+    network.c
+    uart_logging.c
     stm32u5xx_hal_timebase_tim_template.c
 )
 

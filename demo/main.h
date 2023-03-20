@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 2.0.6
+ * Version 3.0.0
  * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
@@ -31,6 +31,7 @@
 #include "logging.h"
 #include "uart_logging.h"
 #include "http.h"
+#include "network.h"
 
 
 #ifdef __cplusplus
@@ -47,10 +48,6 @@ extern "C" {
 #define     REQUEST_SEND_PERIOD_US      30000 * 1000
 #define     CHANNEL_KILL_PERIOD_US      15000 * 1000
 #define     LED_FLASH_PERIOD_US         250 * 1000
-
-#define     HTTP_RX_BUFFER_SIZE_B       1536
-#define     HTTP_TX_BUFFER_SIZE_B       512
-#define     HTTP_NT_BUFFER_SIZE_R       8             // NOTE Size in records, not bytes
 
 
 /*

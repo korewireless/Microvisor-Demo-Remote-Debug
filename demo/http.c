@@ -1,7 +1,7 @@
 /**
  *
- * Microvisor HTTP Communications Demo
- * Version 2.0.8
+ * Microvisor Remote Debugging Demo
+ * Version 3.0.0
  * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *
@@ -40,12 +40,11 @@ bool http_open_channel(void) {
     // Set up the HTTP channel's multi-use send and receive buffers
     static volatile uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
     static volatile uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
-    static const char endpoint[] = "";
 
     // Get the network channel handle.
     // NOTE This is set in `logging.c` which puts the network in place
     //      (ie. so the network handle != 0) well in advance of this being called
-    http_handles.network = get_net_handle();
+    http_handles.network = net_get_handle();
     if (http_handles.network == 0) return false;
     server_log("Network handle: %lu", (uint32_t)http_handles.network);
 
@@ -61,8 +60,10 @@ bool http_open_channel(void) {
             .send_buffer         = (uint8_t*)http_tx_buffer,
             .send_buffer_len     = sizeof(http_tx_buffer),
             .channel_type        = MV_CHANNELTYPE_HTTP,
-            .endpoint            = (uint8_t*)endpoint,
-            .endpoint_len        = 0
+            .endpoint            = {
+                .data = (uint8_t*)"",
+                .length = 0
+            }
         }
     };
 
@@ -102,7 +103,7 @@ void http_close_channel(void) {
 /**
  * @brief Configure the channel Notification Center.
  */
-void http_notification_center_setup(void) {
+void http_setup_notification_center(void) {
     
     // Clear the notification store
     memset((void *)http_notification_center, 0x00, sizeof(http_notification_center));
@@ -152,14 +153,20 @@ enum MvStatus http_send_request(void) {
     sprintf(uri, "https://jsonplaceholder.typicode.com/todos/%lu", item_number++);
     struct MvHttpHeader hdrs[] = {};
     struct MvHttpRequest request_config = {
-        .method = (uint8_t *)verb,
-        .method_len = strlen(verb),
-        .url = (uint8_t *)uri,
-        .url_len = strlen(uri),
+        .method = {
+            .data = (uint8_t *)verb,
+            .length = strlen(verb)
+        },
+        .url = {
+            .data = (uint8_t *)uri,
+            .length = strlen(uri)
+        },
         .num_headers = 0,
         .headers = hdrs,
-        .body = (uint8_t *)body,
-        .body_len = strlen(body),
+        .body = {
+            .data = (uint8_t *)body,
+            .length = strlen(body)
+        },
         .timeout_ms = 10000
     };
 
