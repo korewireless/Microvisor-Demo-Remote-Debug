@@ -10,6 +10,7 @@ It also contains a `.vscode` directory containing configuration files to support
 
 ## Release Notes
 
+* 3.0.1 corrects the Read Me and Docker workflow.
 * 3.0.0 requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
 * 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
 * 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
@@ -68,19 +69,15 @@ docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t mv-rd-demo-ima
 
 Run the build:
 
-```
-[INFO][LocationDriver] Couldn't get location using BLE devices: Couldn't scan BLE devices: Initialization failure: Timeout waiting for the expected data or an acknowledge
-
-```
+```shell
 docker run -it --rm -v $(pwd)/:/home/mvisor/project/ \
-  --name mv-rd-demo \
-  mv-rd-demo-image \
-  --entrypoint /bin/bash
+  --env-file env.list  --name mv-rd-demo \
+  mv-rd-demo-image
 ```
 
 **Note** You will need to have exported certain environment variables, as [detailed below](#environment-variables).
 
-Under Docker, the demo is compiled, uploaded and deployed to your development board.
+Under Docker, the demo is compiled, uploaded and deployed to your development board. The GDB server is started, and then so is GDB.
 
 ### Libraries and Tools
 
