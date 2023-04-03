@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 3.0.0
+# Twilio Microvisor Remote Debugging Demo 3.0.1
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -123,7 +123,7 @@ export MV_DEVICE_SID=UVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 You can get the first two from your Twilio Console [account dashboard](https://console.twilio.com/).
 
-Enter the following command to get your target device’s SID and, if set, its unqiue name:
+Enter the following command to get your target device’s SID and, if set, its unique name:
 
 ```bash
 twilio api:microvisor:v1:devices:list

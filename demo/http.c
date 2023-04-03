@@ -1,7 +1,7 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.0
+ * Version 3.0.1
  * Copyright © 2023, Twilio
  * Licence: Apache 2.0
  *

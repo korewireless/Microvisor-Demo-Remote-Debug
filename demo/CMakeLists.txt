@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set application data
 set(APP "Microvisor Remote Debug Demo")
-set(VERSION_NUMBER "3.0.0")
+set(VERSION_NUMBER "3.0.1")
 set(BUILD_NUMBER "0")
 
 message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
