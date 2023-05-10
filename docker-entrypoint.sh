@@ -5,7 +5,7 @@ cd $(dirname $0)
 
 [ -d build ] && rm -rf build
 
-if [[ -n "${MICROVISOR_GITHUB_ACTION_REMOTE_DEBUG_TEST}" ]]; then
+if [[ -n "${BUILD_ONLY}" ]]; then
   # Build only
   twilio microvisor:deploy . -b
 else

@@ -17,7 +17,7 @@ jobs:
     - name: Build docker image
       run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-remote-debug-image .
     - name: Build code
-      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env MICROVISOR_GITHUB_ACTION_REMOTE_DEBUG_TEST=true --name microvisor-remote-debug microvisor-remote-debug-image
+      run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env BUILD_ONLY=true --name microvisor-remote-debug microvisor-remote-debug-image
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
