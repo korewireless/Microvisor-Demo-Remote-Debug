@@ -10,16 +10,11 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
+    - name: Check out application code
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-    - name: Build docker image
+    - name: Build Docker image
       run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t microvisor-remote-debug-image .
-    - name: Build code
+    - name: Build application code
       run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env BUILD_ONLY=true --name microvisor-remote-debug microvisor-remote-debug-image
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: mv-remote-debug-demo
-        path: ${{ github.workspace }}/build/demo/mv-remote-debug-demo.*
