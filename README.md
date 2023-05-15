@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 3.0.1
+# Twilio Microvisor Remote Debugging Demo 3.0.2
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -10,7 +10,8 @@ It also contains a `.vscode` directory containing configuration files to support
 
 ## Release Notes
 
-* 3.0.1 corrects the Read Me and Docker workflow.
+* 3.0.2 improves the Docker workflow.
+* 3.0.1 corrects the Docker workflow, and corrects the Read Me.
 * 3.0.0 requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
 * 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
 * 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
