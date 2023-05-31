@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.14)
 
 # Set application data
 set(APP "Microvisor Remote Debug Demo")
-set(VERSION_NUMBER "3.0.2")
-set(BUILD_NUMBER "0")
+set(VERSION_NUMBER "3.0.3")
+set(BUILD_NUMBER "1")
 
 message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 
@@ -11,11 +11,6 @@ message("Building ${APP} ${VERSION_NUMBER} build ${BUILD_NUMBER}")
 # Pass in version data
 configure_file(app_version.in app_version.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-# Make app data available to the compiler
-# add_compile_definitions(APP_NAME="${APP}")
-# add_compile_definitions(APP_VERSION="${VERSION_NUMBER}")
-# add_compile_definitions(BUILD_NUM=${BUILD_NUMBER})
 
 # Compile app source code file(s)
 add_executable(${PROJECT_NAME}

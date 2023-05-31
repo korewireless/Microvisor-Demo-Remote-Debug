@@ -1,4 +1,4 @@
-# Twilio Microvisor Remote Debugging Demo 3.0.2
+# Twilio Microvisor Remote Debugging Demo 3.0.3
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
@@ -10,12 +10,7 @@ It also contains a `.vscode` directory containing configuration files to support
 
 ## Release Notes
 
-* 3.0.2 improves the Docker workflow.
-* 3.0.1 corrects the Docker workflow, and corrects the Read Me.
-* 3.0.0 requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
-* 2.0.6 adds [Docker support](#docker) and optional [logging over UART](#uart-logging).
-* 2.0.5 makes no software changes, but adds Visual Studio Code debugging support. Please see [the Microvisor documentation](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging#using-visual-studio-code) for setup and usage information.
-* 2.0.0 replaces earlier `printf()`-based application logging with Microvisor’s application logging system calls.
+* 3.0.x requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
 
 ## Cloning the Repo
 
@@ -72,8 +67,7 @@ Run the build:
 
 ```shell
 docker run -it --rm -v $(pwd)/:/home/mvisor/project/ \
-  --env-file env.list  --name mv-rd-demo \
-  mv-rd-demo-image
+  --env-file env.list --name mv-rd-demo mv-rd-demo-image
 ```
 
 **Note** You will need to have exported certain environment variables, as [detailed below](#environment-variables).
@@ -259,6 +253,6 @@ For more guidance on making use of GDB, see the guide [**Microvisor Remote Debug
 
 ## Copyright and Licensing
 
-The sample code and Microvisor SDK is © 2023, Twilio, Inc. It is licensed under the terms of the [Apache 2.0 License](./LICENSE).
+The sample code and Microvisor SDK is © 2023, Twilio. It is licensed under the terms of the [MIT License](./LICENSE.md).
 
 The SDK makes used of code © 2022, STMicroelectronics and affiliates. This code is licensed under terms described in [this file](https://github.com/twilio/twilio-microvisor-hal-stm32u5/blob/main/LICENSE-STM32CubeU5.md).

@@ -1,9 +1,9 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.2
+ * Version 3.0.3
  * Copyright © 2023, Twilio
- * Licence: Apache 2.0
+ * Licence: MIT
  *
  */
 #include "main.h"
@@ -85,7 +85,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
  */
 void log_uart_output(char* buffer) {
     
-    char uart_buffer[UART_LOG_TIMESTAMP_MAX_LEN_B + LOG_MESSAGE_MAX_LEN_B + 3] = {0};
+    static char uart_buffer[UART_LOG_TIMESTAMP_MAX_LEN_B + LOG_MESSAGE_MAX_LEN_B + 3] = {0};
     
     uint64_t usec = 0;
     time_t sec = 0;

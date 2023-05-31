@@ -1,9 +1,9 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.2
+ * Version 3.0.3
  * Copyright © 2023, Twilio
- * Licence: Apache 2.0
+ * Licence: MIT
  *
  */
 #include "main.h"
@@ -106,7 +106,7 @@ void server_error(char* format_string, ...) {
 static void post_log(bool is_err, char* format_string, va_list args) {
     
     log_start();
-    char buffer[LOG_MESSAGE_MAX_LEN_B] = {0};
+    static char buffer[LOG_MESSAGE_MAX_LEN_B] = {0};
 
     // Write the message type to the message
     sprintf(buffer, is_err ? "[ERROR] " : "[DEBUG] ");

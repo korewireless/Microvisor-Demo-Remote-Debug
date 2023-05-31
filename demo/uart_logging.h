@@ -1,9 +1,9 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.2
+ * Version 3.0.3
  * Copyright © 2023, Twilio
- * Licence: Apache 2.0
+ * Licence: MIT
  *
  */
 #ifndef UART_LOGGING_H

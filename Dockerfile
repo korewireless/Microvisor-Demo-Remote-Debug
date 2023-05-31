@@ -16,10 +16,13 @@ RUN apt -yqq update && apt install -y curl \
     && curl -sL https://deb.nodesource.com/setup_19.x | bash - \
     && apt install -y nodejs && npm install -g twilio-cli
 
+# Install dependencies for this repo ONLY
+RUN apt -yqq update && apt install -y uuid-runtime gdb-multiarch
+
 WORKDIR /home/${USERNAME}/
 
 USER $USERNAME
 
 RUN twilio plugins:install "@twilio/plugin-microvisor"
 
-ENTRYPOINT ./project/docker-entrypoint.sh
+ENTRYPOINT ["./project/docker-entrypoint.sh"]
