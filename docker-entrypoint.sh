@@ -14,7 +14,6 @@ if [[ -n "${BUILD_ONLY}" ]]; then
   # Build only
   twilio microvisor:deploy . -b
 else
-  unique_name=$(uuidgen)
   # Build but don't deploy
   twilio microvisor:deploy . --genkeys --build
   
