@@ -1,8 +1,8 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.3
- * Copyright © 2023, Twilio
+ *
+ * Copyright © 2023, KORE Wireless
  * Licence: MIT
  *
  */
@@ -10,16 +10,16 @@
 #define UART_LOGGING_H
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 /*
  * CONSTANTS
  */
 #define UART_LOG_TIMESTAMP_MAX_LEN_B        64
 #define UART_LOG_MESSAGE_MAX_LEN_B          64
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /*

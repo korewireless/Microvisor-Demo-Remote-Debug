@@ -1,8 +1,8 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.3
- * Copyright © 2023, Twilio
+ *
+ * Copyright © 2023, KORE Wireless
  * Licence: MIT
  *
  */
@@ -34,11 +34,6 @@
 #include "network.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 /*
  * CONSTANTS
  */
@@ -48,6 +43,11 @@ extern "C" {
 #define     REQUEST_SEND_PERIOD_US      30000 * 1000
 #define     CHANNEL_KILL_PERIOD_US      15000 * 1000
 #define     LED_FLASH_PERIOD_US         250 * 1000
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /*

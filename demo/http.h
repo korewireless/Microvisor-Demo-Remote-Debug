@@ -1,18 +1,13 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.3
- * Copyright © 2023, Twilio
+ *
+ * Copyright © 2023, KORE Wireless
  * Licence: MIT
  *
  */
 #ifndef _HTTP_H_
 #define _HTTP_H_
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 /*
@@ -21,6 +16,11 @@ extern "C" {
 #define     HTTP_RX_BUFFER_SIZE_B       1536
 #define     HTTP_TX_BUFFER_SIZE_B       512
 #define     HTTP_NT_BUFFER_SIZE_R       8             // NOTE Size in records, not bytes
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /*

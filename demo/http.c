@@ -1,8 +1,8 @@
 /**
  *
  * Microvisor Remote Debugging Demo
- * Version 3.0.3
- * Copyright © 2023, Twilio
+ *
+ * Copyright © 2023, KORE Wireless
  * Licence: MIT
  *
  */
