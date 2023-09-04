@@ -1,29 +1,25 @@
-# Twilio Microvisor Remote Debugging Demo 3.0.3
+# Microvisor Remote Debugging Demo
 
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
-The application code files can be found in the [demo/](demo/) directory. The [ST_Code/](ST_Code/) directory contains required components that are not part of Twilio Microvisor STM32U5 HAL, which this sample accesses as a submodule.
+The application code files can be found in the [demo/](demo/) directory. The [ST_Code/](ST_Code/) directory contains required components that are not part of the Microvisor STM32U5 HAL, which this sample accesses as a submodule.
 
 This repo contains a `.gdbinit` file which sets the remote target to localhost on port 8001 to match the Twilio CLI Microvisor plugin remote debugging defaults. To enable this file, add `set auto-load safe-path .` to your `~/.gdbinit` file, creating one if necessary.
 
 It also contains a `.vscode` directory containing configuration files to support running the demo using [Visual Studio Code](https://code.visualstudio.com/).
-
-## Release Notes
-
-* 3.0.x requires Microvisor kernel 0.5.0 or above, and [Twilio CLI Microvisor Plugin 0.3.10](https://www.twilio.com/docs/iot/microvisor/the-twilio-cli-microvisor-plugin) or above.
 
 ## Cloning the Repo
 
 This repo makes uses of git submodules, some of which are nested within other submodules. To clone the repo, run:
 
 ```bash
-git clone https://github.com/TwilioDevEd/microvisor-remote-debug-demo.git
+git clone https://github.com/korewireless/Microvisor-Demo-Remote-Debug.git
 ```
 
 and then:
 
 ```bash
-cd microvisor-remote-debug-demo
+cd Microvisor-Demo-Remote-Debug
 git submodule update --init --recursive
 ```
 
@@ -41,7 +37,7 @@ We recommend following this by deleting your `build` directory.
 
 You will need a Twilio account. [Sign up now if you don’t have one](https://www.twilio.com/try-twilio).
 
-You will also need a Twilio Microvisor Nucleo Development Board.
+You will also need a Microvisor Nucleo Development Board.
 
 ## Software Setup
 
@@ -51,7 +47,7 @@ This project is written in C. At this time, we only support Ubuntu 20.0.4. Users
 
 ### Docker
 
-If you are running on an architecture other than x86/amd64 (such as a Mac with Apple silicon), you will need to override the platform when running docker. This is needed for the Twilio CLI apt package which is x86 only at this time:
+If you are running on an architecture other than x86/amd64 (such as a Mac with Apple silicon), you will need to override the platform when running docker. This is needed for the Twilio CLI `apt` package which is x86 only at this time:
 
 ```shell
 export DOCKER_DEFAULT_PLATFORM=linux/amd64
@@ -105,7 +101,7 @@ twilio plugins:install @twilio/plugin-microvisor
 
 #### Environment Variables
 
-Running the Twilio CLI and the Microvisor Plugin to upload the built code to the Twilio cloud for subsequent deployment to your Microvisor Nucleo Board uses the following Twilio credentials stored as environment variables. They should be added to your shell profile:
+Running the Twilio CLI and the Microvisor Plugin to upload the built code to the Microvisor cloud for subsequent deployment to your Microvisor Nucleo Board uses the following Twilio credentials stored as environment variables. They should be added to your shell profile:
 
 ```bash
 export TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -249,10 +245,10 @@ Value returned is $2 = true
 
 Over to you. Use the GDB tools you’ve just demo’d to add some more breakpoints to the code, and step through some of the other parts of the application. To get a list of breakpoints at any time, enter `info breakpoints`.
 
-For more guidance on making use of GDB, see the guide [**Microvisor Remote Debugging**](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging) in the Twilio docs. It also covers Visual Studio Code usage.
+For more guidance on making use of GDB, see the guide [**Microvisor Remote Debugging**](https://www.twilio.com/docs/iot/microvisor/microvisor-remote-debugging). It also covers Visual Studio Code usage.
 
 ## Copyright and Licensing
 
-The sample code and Microvisor SDK is © 2023, Twilio. It is licensed under the terms of the [MIT License](./LICENSE.md).
+The sample code and Microvisor SDK is © 2023, KORE Wireless. It is licensed under the terms of the [MIT License](./LICENSE.md).
 
 The SDK makes used of code © 2022, STMicroelectronics and affiliates. This code is licensed under terms described in [this file](https://github.com/twilio/twilio-microvisor-hal-stm32u5/blob/main/LICENSE-STM32CubeU5.md).
