@@ -34,9 +34,9 @@ extern "C" {
 /*
  * PROTOTYPES
  */
-void            server_log(char* format_string, ...)        __attribute__ ((__format__ (__printf__, 1, 2)));
-void            server_error(char* format_string, ...)      __attribute__ ((__format__ (__printf__, 1, 2)));
-void            do_assert(bool condition, char* message);
+void server_log(char* format_string, ...)        __attribute__ ((__format__ (__printf__, 1, 2)));
+void server_error(char* format_string, ...)      __attribute__ ((__format__ (__printf__, 1, 2)));
+void do_assert(bool condition, char* message);
 
 
 #ifdef __cplusplus
