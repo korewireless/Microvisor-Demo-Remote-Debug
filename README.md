@@ -6,7 +6,12 @@ The application code files can be found in the [demo/](demo/) directory. The [ST
 
 This repo contains a `.gdbinit` file which sets the remote target to localhost on port 8001 to match the Twilio CLI Microvisor plugin remote debugging defaults. To enable this file, add `set auto-load safe-path .` to your `~/.gdbinit` file, creating one if necessary.
 
-It also contains a `.vscode` directory containing configuration files to support running the demo using [Visual Studio Code](https://code.visualstudio.com/).
+It also contains a `.vscode` directory containing configuration files to support running the demo using [Visual Studio Code](https://code.visualstudio.com/). This mode requires the following plugins to be installed into VSCode:
+
+* [Native Debug](https://marketplace.visualstudio.com/items?itemName=webfreak.debug)
+* [Cmake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
+* [Cmake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
+* [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
 
 ## Cloning the Repo
 
@@ -142,6 +147,13 @@ which indicate the version of the application with your remote debugging public 
 ## UART Logging
 
 You may log your application over UART on pin PD5 — pin 41 in bank CN11 on the Microvisor Nucleo Development Board. To use this mode, which is intended as an alternative to application logging, typically when a device is disconnected, connect a 3V3 FTDI USB-to-Serial adapter cable’s RX pin to PD5, and a GND pin to any Nucleo GND pin. Whether you do this or not, the application will continue to log via the Internet.
+
+## VSCode Debugging
+
+1. Open the VSCode workspace file `mv-remote-debug-demo.code-workspace`.
+1. Select  `GCC 10.3.1 arm-none-eabi` (your version number may be different) from the CMake **No active kit** button on the bar at the bottom of the window if it is not already selected.
+1. Click on the **Run and Debug** icon in the left-hand toolbar.
+1. Click on **Microvisor Remote** at the top of the **RUN AND DEBUG** column on the left.
 
 ## A short GDB tutorial
 

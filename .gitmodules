@@ -1,0 +1,3 @@
+[submodule "Microvisor-HAL-STM32U5"]
+	path = Microvisor-HAL-STM32U5
+	url = https://github.com/korewireless/Microvisor-HAL-STM32U5.git

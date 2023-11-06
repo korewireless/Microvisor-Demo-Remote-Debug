@@ -18,9 +18,6 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/toolchain.cmake")
 
 project(${PROJECT_NAME} C CXX ASM)
 
-include_directories(include
-                    ${twilio-microvisor-hal-stm32u5_INCLUDE_DIRS})
-
 set(INCLUDED_HAL_FILES
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal.c
     Drivers/STM32U5xx_HAL_Driver/Src/stm32u5xx_hal_cortex.c
@@ -47,11 +44,12 @@ set(INCLUDED_HAL_FILES
 )
 
 # Load the HAL
-add_subdirectory(twilio-microvisor-hal-stm32u5)
+add_subdirectory(Microvisor-HAL-STM32U5)
 
 # Build the STM32 middleware
 add_library(ST_Code STATIC
-    ST_Code/Core/Src/syscalls.c ST_Code/Core/Src/sysmem.c
+    ST_Code/Core/Src/syscalls.c
+    ST_Code/Core/Src/sysmem.c
     ST_Code/Core/Src/stm32u5xx_hal_msp.c
 )
 
@@ -60,7 +58,7 @@ target_include_directories(ST_Code PUBLIC
 )
 
 target_link_libraries(ST_Code LINK_PUBLIC
-    twilio-microvisor-hal-stm32u5)
+    Microvisor-HAL-STM32U5)
 
 # Load the application
 add_subdirectory(demo)
