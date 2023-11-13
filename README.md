@@ -18,25 +18,14 @@ It also contains a `.vscode` directory containing configuration files to support
 This repo makes uses of git submodules, some of which are nested within other submodules. To clone the repo, run:
 
 ```bash
-git clone https://github.com/korewireless/Microvisor-Demo-Remote-Debug.git
+git clone --recurse-submodules https://github.com/korewireless/Microvisor-Demo-Remote-Debug.git
 ```
 
 and then:
 
 ```bash
 cd Microvisor-Demo-Remote-Debug
-git submodule update --init --recursive
 ```
-
-## Repo Updates
-
-When the repo is updated, and you pull the changes, you should also always update dependency submodules. To do so, run:
-
-```bash
-git submodule update --remote --recursive
-```
-
-We recommend following this by deleting your `build` directory.
 
 ## Requirements
 
@@ -80,8 +69,8 @@ Under Docker, the demo is compiled, uploaded and deployed to your development bo
 Under Ubuntu, run the following:
 
 ```bash
-sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi \
-  git curl build-essential cmake libsecret-1-dev jq openssl
+sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi git curl \
+  build-essential cmake libsecret-1-dev jq openssl gdb-multiarch
 ```
 
 ### Twilio CLI
@@ -116,11 +105,7 @@ export MV_DEVICE_SID=UVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 You can get the first two from your Twilio Console [account dashboard](https://console.twilio.com/).
 
-Enter the following command to get your target device’s SID and, if set, its unique name:
-
-```bash
-twilio api:microvisor:v1:devices:list
-```
+The third value cane be found in the [**Iot > Microvisor > Devices** section](https://console.twilio.com/us1/develop/iot/microvisor/devices). It is also accessible via the QR code on the back of your development board. Scan the code with your mobile phone and a suitable app, and the board’s SID is the third /-separated field.
 
 ## Build and deploy the application
 
