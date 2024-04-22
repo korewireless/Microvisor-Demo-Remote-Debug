@@ -2,7 +2,7 @@
  *
  * Microvisor Remote Debugging Demo
  *
- * Copyright © 2023, KORE Wireless
+ * Copyright © 2024, KORE Wireless
  * Licence: MIT
  *
  */
@@ -44,7 +44,7 @@ extern struct {
  *  @brief The application entry point.
  */
 int main(void) {
-    
+
     // Reset of all peripherals, Initializes the Flash interface and the sys tick.
     HAL_Init();
 
@@ -56,7 +56,7 @@ int main(void) {
 
     // Start the network
     net_open_network();
-    
+
     // Initialize peripherals
     gpio_init();
 
@@ -110,7 +110,7 @@ int main(void) {
 
         // Process a request's response if indicated by the ISR
         if (received_request) process_http_response();
-        
+
         // Respond to unexpected channel closure
         if (channel_was_closed) {
             enum MvClosureReason reason = 0;
@@ -119,7 +119,7 @@ int main(void) {
             } else {
                 server_error("channel closed for unknown reason");
             }
-            
+
             channel_was_closed = false;
             do_close_channel = true;
         }
@@ -149,7 +149,7 @@ int main(void) {
  * Used to flash the Nucleo's USER LED, which is on GPIO Pin PA5.
  */
 static void gpio_init(void) {
-    
+
     // Enable GPIO port clock
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -170,7 +170,7 @@ static void gpio_init(void) {
  *  @brief Sequence-oriented function to demo remote debugging #1.
  */
 void debug_function_parent(uint32_t* vptr) {
-    
+
     uint32_t test_var = *vptr;
     debug_function_child(&test_var);
     *vptr = test_var;
@@ -183,7 +183,7 @@ void debug_function_parent(uint32_t* vptr) {
  *  @returns Always `true`, to demo return values.
  */
 bool debug_function_child(uint32_t* vptr) {
-    
+
     (*vptr)++;
     return true;
 }
@@ -193,7 +193,7 @@ bool debug_function_child(uint32_t* vptr) {
  * @brief Process HTTP response data
  */
 static void process_http_response(void) {
-    
+
     // We have received data via the active HTTP channel so establish
     // an `MvHttpResponseData` record to hold response metadata
     static struct MvHttpResponseData resp_data;
@@ -233,7 +233,7 @@ static void process_http_response(void) {
  * @brief Show basic device info.
  */
 static void log_device_info(void) {
-    
+
     uint8_t buffer[35] = { 0 };
     mvGetDeviceId(buffer, 34);
     server_log("Device: %s", buffer);

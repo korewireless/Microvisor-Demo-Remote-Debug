@@ -2,7 +2,7 @@
  *
  * Microvisor Remote Debugging Demo
  *
- * Copyright © 2023, KORE Wireless
+ * Copyright © 2024, KORE Wireless
  * Licence: MIT
  *
  */
@@ -16,7 +16,7 @@ static UART_HandleTypeDef log_uart;
  * @brief Configure STM32U585 UART2.
  */
 bool log_uart_init(void) {
-    
+
     log_uart.Instance           = USART2;
     log_uart.Init.BaudRate      = 115200;              // Set your preferred speed
     log_uart.Init.WordLength    = UART_WORDLENGTH_8B;  // 8
@@ -41,7 +41,7 @@ bool log_uart_init(void) {
  * @param uart: A HAL UART_HandleTypeDef pointer to the UART instance.
  */
 void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
-    
+
     // This SDK-named function is called by HAL_UART_Init()
 
     // Configure U5 peripheral clock
@@ -84,29 +84,29 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
  * @param length: String character count.
  */
 void log_uart_output(char* buffer) {
-    
+
     static char uart_buffer[UART_LOG_TIMESTAMP_MAX_LEN_B + LOG_MESSAGE_MAX_LEN_B + 3] = {0};
-    
+
     uint64_t usec = 0;
     time_t sec = 0;
     time_t msec = 0;
-    
+
     enum MvStatus status = mvGetWallTime(&usec);
     if (status == MV_STATUS_OKAY) {
         // Get the second and millisecond times
         sec = (time_t)usec / 1000000;
         msec = (time_t)usec / 1000;
     }
-    
+
     // Write time string as "2022-05-10 13:30:58.XXX "
     strftime(uart_buffer, 64, "%F %T.XXX ", gmtime(&sec));
     // Insert the millisecond time over the XXX
     sprintf(&uart_buffer[20], "%03u ", (unsigned)(msec % 1000));
     uint32_t length = strlen(uart_buffer);
-    
+
     // Write the timestamp to the message
     sprintf(&uart_buffer[length], "%s\n", buffer);
-    
+
     // Send uart_buffer to the UART
     const char nls[2] = "\r\n";
     char *buf_ptr = uart_buffer;

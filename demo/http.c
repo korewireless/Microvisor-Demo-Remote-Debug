@@ -2,7 +2,7 @@
  *
  * Microvisor Remote Debugging Demo
  *
- * Copyright © 2023, KORE Wireless
+ * Copyright © 2024, KORE Wireless
  * Licence: MIT
  *
  */
@@ -36,7 +36,7 @@ extern volatile bool channel_was_closed;
  * @returns `true` if the channel is open, otherwise `false`.
  */
 bool http_open_channel(void) {
-    
+
     // Set up the HTTP channel's multi-use send and receive buffers
     static volatile uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
     static volatile uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
@@ -74,7 +74,7 @@ bool http_open_channel(void) {
         server_log("HTTP channel handle: %lu", (uint32_t)http_handles.channel);
         return true;
     }
-    
+
     server_error("Could not open HTTP channel. Status: %i", status);
     return false;
 }
@@ -84,7 +84,7 @@ bool http_open_channel(void) {
  * @brief Close the currently open HTTP channel.
  */
 void http_close_channel(void) {
-    
+
     // If we have a valid channel handle -- ie. it is non-zero --
     // then ask Microvisor to close it and confirm acceptance of
     // the closure request.
@@ -104,7 +104,7 @@ void http_close_channel(void) {
  * @brief Configure the channel Notification Center.
  */
 void http_setup_notification_center(void) {
-    
+
     // Clear the notification store
     memset((void *)http_notification_center, 0x00, sizeof(http_notification_center));
 
@@ -133,9 +133,9 @@ void http_setup_notification_center(void) {
  * @returns `true` if the request was accepted by Microvisor, otherwise `false`
  */
 enum MvStatus http_send_request(void) {
-    
+
     static uint32_t item_number = 0;
-    
+
     // Make sure we have a valid channel handle
     if (http_handles.channel == 0) {
         // There's no open channel, so open
@@ -143,9 +143,9 @@ enum MvStatus http_send_request(void) {
         http_open_channel();
         return http_send_request();
     }
-    
+
     server_log("Sending HTTP request");
-    
+
     // Set up the request
     const char verb[] = "GET";
     const char body[] = "";
@@ -179,7 +179,7 @@ enum MvStatus http_send_request(void) {
     } else {
         server_error("Could not issue request. Status: %i", status);
     }
-    
+
     return status;
 }
 
@@ -191,7 +191,7 @@ enum MvStatus http_send_request(void) {
  * and extract HTTP response data when it is available.
  */
 void TIM8_BRK_IRQHandler(void) {
-    
+
     // Check for a suitable event: readable data in the channel
     bool got_notification = false;
     volatile struct MvNotification notification = http_notification_center[current_notification_index];
@@ -202,13 +202,13 @@ void TIM8_BRK_IRQHandler(void) {
         received_request = true;
         got_notification = true;
     }
-    
+
     if (notification.event_type == MV_EVENTTYPE_CHANNELNOTCONNECTED) {
         // The HTTP channel signaled its unexpected closure
         channel_was_closed = true;
         got_notification = true;
     }
-    
+
     if (got_notification) {
         // Point to the next record to be written
         current_notification_index = (current_notification_index + 1) % HTTP_NT_BUFFER_SIZE_R;

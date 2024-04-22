@@ -2,7 +2,7 @@
  *
  * Microvisor Remote Debugging Demo
  *
- * Copyright © 2023, KORE Wireless
+ * Copyright © 2024, KORE Wireless
  * Licence: MIT
  *
  */
@@ -35,7 +35,7 @@ static volatile uint32_t current_notification_idx = 0;
  * @brief Configure and connect to the network.
  */
 void net_open_network(void) {
-    
+
     // Configure the network's notification center
     net_setup_notification_center();
 
@@ -79,7 +79,7 @@ void net_open_network(void) {
  * @brief Configure the network Notification Center.
  */
 static void net_setup_notification_center(void) {
-    
+
     if (net_handles.notification == 0) {
         // Clear the notification store
         memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
@@ -110,7 +110,7 @@ static void net_setup_notification_center(void) {
  * @returns The network handle.
  */
 MvNetworkHandle net_get_handle(void) {
-    
+
     return net_handles.network;
 }
 
@@ -119,7 +119,7 @@ MvNetworkHandle net_get_handle(void) {
  * @brief Network notification ISR.
  */
 void TIM1_BRK_IRQHandler(void) {
-    
+
     // Network notifications interrupt service handler
     // Add your own notification processing code here
 }
