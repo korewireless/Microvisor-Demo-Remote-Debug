@@ -1,5 +1,7 @@
 # Microvisor Remote Debugging Demo
 
+[![.github/workflows/build.yml](https://github.com/korewireless/Microvisor-Demo-Remote-Debug/actions/workflows/build.yml/badge.svg)](https://github.com/korewireless/Microvisor-Demo-Remote-Debug/actions/workflows/build.yml)
+
 This repo provides a basic user application that you can use to try out Microvisor’s remote debugging feature.
 
 The application code files can be found in the [demo/](demo/) directory. The [ST_Code/](ST_Code/) directory contains required components that are not part of the Microvisor STM32U5 HAL, which this sample accesses as a submodule.
