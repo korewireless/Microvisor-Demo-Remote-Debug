@@ -56,7 +56,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
     }
 
     // Enable the UART GPIO interface clock
-    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE()
 
     // Configure the GPIO pins for UART
     // Pin PD5 - TX
@@ -72,7 +72,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
 
 
     // Enable the UART clock
-    __HAL_RCC_USART2_CLK_ENABLE();
+    __HAL_RCC_USART2_CLK_ENABLE()
 }
 
 
@@ -109,13 +109,14 @@ void log_uart_output(char* buffer) {
 
     // Send uart_buffer to the UART
     const char nls[2] = "\r\n";
-    char *buf_ptr = uart_buffer;
+    const char *buf_ptr = uart_buffer;
     while(*buf_ptr != 0) {
         if (*buf_ptr == '\n') {
-            HAL_UART_Transmit(&log_uart, (uint8_t*)nls, 2, 100);
-            buf_ptr++;
+            HAL_UART_Transmit(&log_uart, (const uint8_t*)nls, 2, 100);
         } else {
-            HAL_UART_Transmit(&log_uart, (uint8_t*)buf_ptr++, 1, 100);
+            HAL_UART_Transmit(&log_uart, (const uint8_t*)buf_ptr, 1, 100);
         }
+
+        buf_ptr++;
     }
 }

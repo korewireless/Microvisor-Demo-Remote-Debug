@@ -154,17 +154,17 @@ enum MvStatus http_send_request(void) {
     struct MvHttpHeader hdrs[] = {};
     struct MvHttpRequest request_config = {
         .method = {
-            .data = (uint8_t *)verb,
+            .data = (const uint8_t *)verb,
             .length = strlen(verb)
         },
         .url = {
-            .data = (uint8_t *)uri,
+            .data = (const uint8_t *)uri,
             .length = strlen(uri)
         },
         .num_headers = 0,
         .headers = hdrs,
         .body = {
-            .data = (uint8_t *)body,
+            .data = (const uint8_t *)body,
             .length = strlen(body)
         },
         .timeout_ms = 10000
@@ -173,7 +173,7 @@ enum MvStatus http_send_request(void) {
     // Issue the request -- and check its status
     enum MvStatus status = mvSendHttpRequest(http_handles.channel, &request_config);
     if (status == MV_STATUS_OKAY) {
-        server_log("Request sent to Twilio");
+        server_log("Request sent to Microvisor Cloud");
     } else if (status == MV_STATUS_CHANNELCLOSED) {
         server_error("HTTP channel %lu already closed", (uint32_t)http_handles.channel);
     } else {

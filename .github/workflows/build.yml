@@ -30,7 +30,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Build Docker image
-      run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t mv-iot-image-lin-dock .
+      run: docker buildx build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t mv-iot-image-lin-dock .
     - name: Build application code
       run: docker run --rm -v $(pwd)/:/home/mvisor/project/ --env BUILD_ONLY=true --name mv-iot-lin-dock mv-iot-image-lin-dock
     - name: Upload artifacts

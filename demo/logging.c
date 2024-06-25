@@ -14,7 +14,7 @@
  */
 static void log_start(void);
 static void log_service_setup(void);
-static void post_log(bool is_err, char* format_string, va_list args);
+static void post_log(bool is_err, const char* format_string, va_list args);
 
 
 /*
@@ -70,7 +70,7 @@ static void log_service_setup(void) {
  * @param format_string Message string with optional formatting
  * @param ...           Optional injectable values
  */
-void server_log(char* format_string, ...) {
+void server_log(const char* format_string, ...) {
 
     if (LOG_DEBUG_MESSAGES) {
         va_list args;
@@ -87,7 +87,7 @@ void server_log(char* format_string, ...) {
  * @param format_string Message string with optional formatting
  * @param ...           Optional injectable values
  */
-void server_error(char* format_string, ...) {
+void server_error(const char* format_string, ...) {
 
     va_list args;
     va_start(args, format_string);
@@ -103,7 +103,7 @@ void server_error(char* format_string, ...) {
  * @param format_string Message string with optional formatting
  * @param args          va_list of args from previous call
  */
-static void post_log(bool is_err, char* format_string, va_list args) {
+static void post_log(bool is_err, const char* format_string, va_list args) {
 
     log_start();
     static char buffer[LOG_MESSAGE_MAX_LEN_B] = {0};
@@ -128,10 +128,10 @@ static void post_log(bool is_err, char* format_string, va_list args) {
  * @param condition The condition to check.
  * @param message   The error message.
  */
-void do_assert(bool condition, char* message) {
+void do_assert(bool condition, const char* message) {
 
     if (!condition) {
-        server_error(message);
+        server_error("%s", message);
         assert(false);
     }
 }

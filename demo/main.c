@@ -151,7 +151,7 @@ int main(void) {
 static void gpio_init(void) {
 
     // Enable GPIO port clock
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE()
 
     // Configure GPIO pin output Level
     HAL_GPIO_WritePin(LED_GPIO_BANK, LED_GPIO_PIN, GPIO_PIN_RESET);
@@ -221,7 +221,7 @@ static void process_http_response(void) {
                 server_error("HTTP status code: %lu", resp_data.status_code);
             }
         } else {
-            server_error("Request failed. Status: %i", resp_data.result);;
+            server_error("Request failed. Status: %i", resp_data.result);
         }
     } else {
         server_error("Response data read failed. Status: %i", status);
@@ -237,6 +237,5 @@ static void log_device_info(void) {
     uint8_t buffer[35] = { 0 };
     mvGetDeviceId(buffer, 34);
     server_log("Device: %s", buffer);
-    server_log("   App: %s %s", APP_NAME, APP_VERSION);
-    server_log(" Build: %i", BUILD_NUM);
+    server_log("   App: %s %s (%i)", APP_NAME, APP_VERSION, BUILD_NUM);
 }
