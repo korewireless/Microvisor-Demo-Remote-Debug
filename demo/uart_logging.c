@@ -1,6 +1,6 @@
 /**
  *
- * Microvisor Remote Debugging Demo
+ * Microvisor C Demos
  *
  * Copyright © 2024, KORE Wireless
  * Licence: MIT
@@ -27,8 +27,8 @@ bool log_uart_init(void) {
 
     // Initialize the UART
     if (HAL_UART_Init(&log_uart) != HAL_OK) {
-      server_error("Could not enable logging UART");
-      return false;
+        server_error("Could not enable logging UART");
+        return false;
     }
 
     server_log("UART logging enabled");

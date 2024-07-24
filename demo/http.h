@@ -29,7 +29,8 @@ extern "C" {
 void            http_setup_notification_center(void);
 bool            http_open_channel(void);
 void            http_close_channel(void);
-enum MvStatus   http_send_request(void);
+MvChannelHandle http_get_handle(void);
+enum MvStatus   http_send_request(bool do_reset);
 
 
 #ifdef __cplusplus

@@ -3,7 +3,7 @@ set -e
 
 cd $(dirname $0)
 
-[ -d build ] && rm -rf build
+rm -rf build
 
 # Place these here so dependencies are checked
 # even if the take the BUILD_ONLY path (GitHub Action)
@@ -16,7 +16,7 @@ if [[ -n "${BUILD_ONLY}" ]]; then
 else
   # Build but don't deploy
   twilio microvisor:deploy . --genkeys --build
-  
+
   # Upload build with unique app name
   if twilio microvisor:apps:create build/demo/project.zip $unique_name ; then
     # Deploy unique app name to device

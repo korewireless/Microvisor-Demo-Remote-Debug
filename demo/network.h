@@ -1,6 +1,6 @@
 /**
  *
- * Microvisor Remote Debugging Demo
+ * Microvisor C Demos
  *
  * Copyright © 2024, KORE Wireless
  * Licence: MIT
@@ -8,6 +8,12 @@
  */
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
+
+
+/*
+ * CONSTANTS
+ */
+#define     NET_NC_BUFFER_SIZE_R                8
 
 
 #ifdef __cplusplus

@@ -7,7 +7,6 @@
  *
  */
 #include "main.h"
-#include "app_version.h"
 
 
 /*
@@ -15,29 +14,20 @@
  */
 static void gpio_init(void);
 static void process_http_response(void);
-static void log_device_info(void);
 
 
 /*
  *  GLOBALS
  */
+static bool reset_count = false;
 
 /**
  *  Theses variables may be changed by interrupt handler code,
  *  so we mark them as `volatile` to ensure compiler optimization
  *  doesn't render them immutable at runtime
  */
-volatile bool    received_request = false;
-volatile bool    channel_was_closed = false;
-
-/**
- * These variables are defined in `http.c`
- */
-extern struct {
-    MvNotificationHandle notification;
-    MvNetworkHandle      network;
-    MvChannelHandle      channel;
-} http_handles;
+volatile bool received_request = false;
+volatile bool channel_was_closed = false;
 
 
 /**
@@ -48,17 +38,23 @@ int main(void) {
     // Reset of all peripherals, Initializes the Flash interface and the sys tick.
     HAL_Init();
 
+    // Configure the system clock
+    system_clock_config();
+
+    // Initialize peripherals
+    gpio_init();
+
     // Get the Device ID and build number and log them
     log_device_info();
+
+    // What happened before?
+    show_wake_reason();
 
     // Set up channel notifications
     http_setup_notification_center();
 
     // Start the network
     net_open_network();
-
-    // Initialize peripherals
-    gpio_init();
 
     // Tick counters
     uint64_t kill_tick = 0;
@@ -97,8 +93,8 @@ int main(void) {
             server_log("Debug test variable value: %lu", store);
 
             // No channel open? Try and send the temperature
-            if (http_handles.channel == 0 && http_open_channel()) {
-                result = http_send_request();
+            if (http_get_handle() == 0 && http_open_channel()) {
+                result = http_send_request(reset_count);
                 if (result > 0) do_close_channel = true;
                 kill_tick = tick;
             } else {
@@ -114,7 +110,7 @@ int main(void) {
         // Respond to unexpected channel closure
         if (channel_was_closed) {
             enum MvClosureReason reason = 0;
-            if (mvGetChannelClosureReason(http_handles.channel, &reason) == MV_STATUS_OKAY) {
+            if (mvGetChannelClosureReason(http_get_handle(), &reason) == MV_STATUS_OKAY) {
                 server_error("Channel closed for reason: %lu", (uint32_t)reason);
             } else {
                 server_error("channel closed for unknown reason");
@@ -139,6 +135,10 @@ int main(void) {
             kill_tick = 0;
             http_close_channel();
         }
+
+        // Reached the end of the items available from the API
+        // so reset the counter and start again
+        if (reset_count) reset_count = false;
     }
 }
 
@@ -197,7 +197,7 @@ static void process_http_response(void) {
     // We have received data via the active HTTP channel so establish
     // an `MvHttpResponseData` record to hold response metadata
     static struct MvHttpResponseData resp_data;
-    enum MvStatus status = mvReadHttpResponseData(http_handles.channel, &resp_data);
+    enum MvStatus status = mvReadHttpResponseData(http_get_handle(), &resp_data);
     if (status == MV_STATUS_OKAY) {
         // Check we successfully issued the request (`result` is OK) and
         // the request was successful (status code 200)
@@ -210,13 +210,17 @@ static void process_http_response(void) {
                 // the response body into
                 uint8_t buffer[resp_data.body_length + 1];
                 memset((void *)buffer, 0x00, resp_data.body_length + 1);
-                status = mvReadHttpResponseBody(http_handles.channel, 0, buffer, resp_data.body_length);
+                status = mvReadHttpResponseBody(http_get_handle(), 0, buffer, resp_data.body_length);
                 if (status == MV_STATUS_OKAY) {
                     // Retrieved the body data successfully so log it
                     server_log("Message JSON:\n%s", buffer);
                 } else {
                     server_error("HTTP response body read status %i", status);
                 }
+            } else if (resp_data.status_code == 404) {
+                // Reached the end of available items, so reset the counter
+                reset_count = true;
+                server_log("Resetting ping count");
             } else {
                 server_error("HTTP status code: %lu", resp_data.status_code);
             }
@@ -226,16 +230,4 @@ static void process_http_response(void) {
     } else {
         server_error("Response data read failed. Status: %i", status);
     }
-}
-
-
-/**
- * @brief Show basic device info.
- */
-static void log_device_info(void) {
-
-    uint8_t buffer[35] = { 0 };
-    mvGetDeviceId(buffer, 34);
-    server_log("Device: %s", buffer);
-    server_log("   App: %s %s (%i)", APP_NAME, APP_VERSION, BUILD_NUM);
 }

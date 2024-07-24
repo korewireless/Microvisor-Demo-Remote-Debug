@@ -7,7 +7,10 @@
     "settings": {
         "files.associations": {
             "errno.h": "c",
-            "atomic": "c"
+            "atomic": "c",
+            "generic.h": "c",
+            "uart_logging.h": "c",
+            "main.h": "c"
         }
     }
 }

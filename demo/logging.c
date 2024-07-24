@@ -1,6 +1,6 @@
 /**
  *
- * Microvisor Remote Debugging Demo
+ * Microvisor C Demos
  *
  * Copyright © 2024, KORE Wireless
  * Licence: MIT
@@ -21,13 +21,13 @@ static void post_log(bool is_err, const char* format_string, va_list args);
  * GLOBALS
  */
 // Entities for Microvisor application logging
-static uint8_t log_buffer[LOG_BUFFER_SIZE_B] __attribute__((aligned(512))) = {0};
+static uint8_t  log_buffer[LOG_BUFFER_SIZE_B] __attribute__((aligned(512))) = {0};
 static uint32_t log_state = USER_HANDLE_LOGGING_OFF;
 
 // Entities for local serial logging
+static bool uart_available = false;
 // Declared in `uart_logging.c`
 extern UART_HandleTypeDef uart;
-static bool uart_available = false;
 
 
 /**
@@ -105,8 +105,10 @@ void server_error(const char* format_string, ...) {
  */
 static void post_log(bool is_err, const char* format_string, va_list args) {
 
-    log_start();
     static char buffer[LOG_MESSAGE_MAX_LEN_B] = {0};
+
+    // Initialize logging if we need to
+    log_start();
 
     // Write the message type to the message
     sprintf(buffer, is_err ? "[ERROR] " : "[DEBUG] ");

@@ -32,6 +32,7 @@
 #include "uart_logging.h"
 #include "http.h"
 #include "network.h"
+#include "generic.h"
 
 
 /*

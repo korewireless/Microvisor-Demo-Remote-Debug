@@ -14,7 +14,7 @@
  */
 // Central store for Microvisor resource handles used in this code.
 // See `https://www.twilio.com/docs/iot/microvisor/syscalls#handles`
-struct {
+static struct {
     MvNotificationHandle notification;
     MvNetworkHandle      network;
     MvChannelHandle      channel;
@@ -22,7 +22,7 @@ struct {
 
 // Central store for HTTP request management notification records.
 // Holds HTTP_NT_BUFFER_SIZE_R records at a time -- each record is 16 bytes in size.
-static volatile struct MvNotification http_notification_center[HTTP_NT_BUFFER_SIZE_R] __attribute__((aligned(8)));
+static struct MvNotification http_notification_center[HTTP_NT_BUFFER_SIZE_R] __attribute__((aligned(8)));
 static volatile uint32_t current_notification_index = 0;
 
 // Defined in `main.c`
@@ -38,8 +38,8 @@ extern volatile bool channel_was_closed;
 bool http_open_channel(void) {
 
     // Set up the HTTP channel's multi-use send and receive buffers
-    static volatile uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
-    static volatile uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
+    static uint8_t http_rx_buffer[HTTP_RX_BUFFER_SIZE_B] __attribute__((aligned(512)));
+    static uint8_t http_tx_buffer[HTTP_TX_BUFFER_SIZE_B] __attribute__((aligned(512)));
 
     // Get the network channel handle.
     // NOTE This is set in `logging.c` which puts the network in place
@@ -49,15 +49,15 @@ bool http_open_channel(void) {
     server_log("Network handle: %lu", (uint32_t)http_handles.network);
 
     // Configure the required data channel
-    struct MvOpenChannelParams channel_config = {
+    const struct MvOpenChannelParams channel_config = {
         .version = 1,
         .v1 = {
             .notification_handle = http_handles.notification,
             .notification_tag    = USER_TAG_HTTP_OPEN_CHANNEL,
             .network_handle      = http_handles.network,
-            .receive_buffer      = (uint8_t*)http_rx_buffer,
+            .receive_buffer      = http_rx_buffer,
             .receive_buffer_len  = sizeof(http_rx_buffer),
-            .send_buffer         = (uint8_t*)http_tx_buffer,
+            .send_buffer         = http_tx_buffer,
             .send_buffer_len     = sizeof(http_tx_buffer),
             .channel_type        = MV_CHANNELTYPE_HTTP,
             .endpoint            = {
@@ -101,6 +101,17 @@ void http_close_channel(void) {
 
 
 /**
+ * @brief Provide the current channel handle.
+ *
+ * @returns The channel handle.
+ */
+MvChannelHandle http_get_handle(void) {
+
+    return http_handles.channel;
+}
+
+
+/**
  * @brief Configure the channel Notification Center.
  */
 void http_setup_notification_center(void) {
@@ -109,7 +120,7 @@ void http_setup_notification_center(void) {
     memset((void *)http_notification_center, 0x00, sizeof(http_notification_center));
 
     // Configure a notification center for network-centric notifications
-    static struct MvNotificationSetup http_notification_setup = {
+    const struct MvNotificationSetup http_notification_setup = {
         .irq = TIM8_BRK_IRQn,
         .buffer = (struct MvNotification *)http_notification_center,
         .buffer_size = sizeof(http_notification_center)
@@ -118,12 +129,12 @@ void http_setup_notification_center(void) {
     // Ask Microvisor to establish the notification center
     // and confirm that it has accepted the request
     enum MvStatus status = mvSetupNotifications(&http_notification_setup, &http_handles.notification);
-    do_assert(status == MV_STATUS_OKAY, "Could not set up HTTP channel NC");
+    do_assert(status == MV_STATUS_OKAY, "Could not set up HTTP channel Notification Center");
 
     // Start the notification IRQ
     NVIC_ClearPendingIRQ(TIM8_BRK_IRQn);
     NVIC_EnableIRQ(TIM8_BRK_IRQn);
-    server_log("HTTP NC handle: %lu", (uint32_t)http_handles.notification);
+    server_log("HTTP Notification Center handle: %lu", (uint32_t)http_handles.notification);
 }
 
 
@@ -132,34 +143,36 @@ void http_setup_notification_center(void) {
  *
  * @returns `true` if the request was accepted by Microvisor, otherwise `false`
  */
-enum MvStatus http_send_request(void) {
+enum MvStatus http_send_request(bool do_reset) {
 
-    static uint32_t item_number = 0;
+    static uint32_t item_number = 1;
 
     // Make sure we have a valid channel handle
     if (http_handles.channel == 0) {
         // There's no open channel, so open
         // one now and try to send again
         http_open_channel();
-        return http_send_request();
+        return http_send_request(false);
     }
 
-    server_log("Sending HTTP request");
+    server_log("Preparing HTTP request");
+
+    if (do_reset) item_number = 1;
 
     // Set up the request
     const char verb[] = "GET";
     const char body[] = "";
-    char uri[46] = "";
-    sprintf(uri, "https://jsonplaceholder.typicode.com/todos/%lu", item_number++);
-    struct MvHttpHeader hdrs[] = {};
-    struct MvHttpRequest request_config = {
+    char url[64] = "";
+    snprintf(url, 64, "https://jsonplaceholder.typicode.com/todos/%lu", item_number++);
+    const struct MvHttpHeader hdrs[] = {};
+    const struct MvHttpRequest request_config = {
         .method = {
             .data = (const uint8_t *)verb,
             .length = strlen(verb)
         },
         .url = {
-            .data = (const uint8_t *)uri,
-            .length = strlen(uri)
+            .data = (const uint8_t *)url,
+            .length = strlen(url)
         },
         .num_headers = 0,
         .headers = hdrs,
@@ -173,7 +186,7 @@ enum MvStatus http_send_request(void) {
     // Issue the request -- and check its status
     enum MvStatus status = mvSendHttpRequest(http_handles.channel, &request_config);
     if (status == MV_STATUS_OKAY) {
-        server_log("Request sent to Microvisor Cloud");
+        server_log("Request sent to the Microvisor Cloud");
     } else if (status == MV_STATUS_CHANNELCLOSED) {
         server_error("HTTP channel %lu already closed", (uint32_t)http_handles.channel);
     } else {
@@ -194,7 +207,7 @@ void TIM8_BRK_IRQHandler(void) {
 
     // Check for a suitable event: readable data in the channel
     bool got_notification = false;
-    volatile struct MvNotification notification = http_notification_center[current_notification_index];
+    struct MvNotification notification = http_notification_center[current_notification_index];
     if (notification.event_type == MV_EVENTTYPE_CHANNELDATAREADABLE) {
         // Flag we need to access received data and to close the HTTP channel
         // when we're back in the main loop. This lets us exit the ISR quickly.
@@ -217,4 +230,4 @@ void TIM8_BRK_IRQHandler(void) {
         // See https://www.twilio.com/docs/iot/microvisor/microvisor-notifications#buffer-overruns
         notification.event_type = 0;
     }
- }
+}

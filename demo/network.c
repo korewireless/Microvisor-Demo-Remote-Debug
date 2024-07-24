@@ -1,6 +1,6 @@
 /**
  *
- * Microvisor Remote Debugging Demo
+ * Microvisor C Demos
  *
  * Copyright © 2024, KORE Wireless
  * Licence: MIT
@@ -27,7 +27,7 @@ static struct {
 
 // Central store for network management notification records.
 // Holds 'NET_NC_BUFFER_SIZE_R' records at a time -- each record is 16 bytes in size.
-static volatile struct MvNotification net_notification_buffer[NET_NC_BUFFER_SIZE_R] __attribute__((aligned(8)));
+static struct MvNotification net_notification_buffer[NET_NC_BUFFER_SIZE_R] __attribute__((aligned(8)));
 
 
 /**
@@ -40,7 +40,7 @@ void net_open_network(void) {
 
     if (net_handles.network == 0) {
         // Configure the network connection request
-        struct MvRequestNetworkParams network_config = {
+        const struct MvRequestNetworkParams network_config = {
             .version = 1,
             .v1 = {
                 .notification_handle = net_handles.notification,
@@ -65,7 +65,7 @@ void net_open_network(void) {
             }
 
             // ... or wait a short period before retrying
-            for (volatile unsigned i = 0; i < 50000; ++i) {
+            for (size_t i = 0; i < 50000; ++i) {
                 // No op
                 __asm("nop");
             }
@@ -81,24 +81,24 @@ static void net_setup_notification_center(void) {
 
     if (net_handles.notification == 0) {
         // Clear the notification store
-        memset((void *)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
+        memset((void*)net_notification_buffer, 0xff, sizeof(net_notification_buffer));
 
         // Configure a notification center for network-centric notifications
-        static struct MvNotificationSetup net_notification_config = {
-            .irq = TIM1_BRK_IRQn,
-            .buffer = (struct MvNotification *)net_notification_buffer,
+        const struct MvNotificationSetup net_notification_config = {
+            .irq = TIM2_IRQn,
+            .buffer = (struct MvNotification*)net_notification_buffer,
             .buffer_size = sizeof(net_notification_buffer)
         };
 
         // Ask Microvisor to establish the notification center
         // and confirm that it has accepted the request
         enum MvStatus status = mvSetupNotifications(&net_notification_config, &net_handles.notification);
-        do_assert(status == MV_STATUS_OKAY, "Could not start network NC");
+        do_assert(status == MV_STATUS_OKAY, "Could not start network Notification Center");
 
         // Start the notification IRQ
-        NVIC_ClearPendingIRQ(TIM1_BRK_IRQn);
-        NVIC_EnableIRQ(TIM1_BRK_IRQn);
-        server_log("Network NC handle: %lu", (uint32_t)net_handles.notification);
+        NVIC_ClearPendingIRQ(TIM2_IRQn);
+        NVIC_EnableIRQ(TIM2_IRQn);
+        server_log("Network Notification Center handle: %lu", (uint32_t)net_handles.notification);
     }
 }
 
@@ -117,7 +117,7 @@ MvNetworkHandle net_get_handle(void) {
 /**
  * @brief Network notification ISR.
  */
-void TIM1_BRK_IRQHandler(void) {
+void TIM2_IRQHandler(void) {
 
     // Network notifications interrupt service handler
     // Add your own notification processing code here
