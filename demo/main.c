@@ -95,6 +95,7 @@ int main(void) {
             // No channel open? Try and send the temperature
             if (http_get_handle() == 0 && http_open_channel()) {
                 result = http_send_request(reset_count);
+                if (reset_count) reset_count = false;
                 if (result > 0) do_close_channel = true;
                 kill_tick = tick;
             } else {
@@ -103,9 +104,6 @@ int main(void) {
 
             last_send_tick = tick;
         }
-
-        // Process a request's response if indicated by the ISR
-        if (received_request) process_http_response();
 
         // Respond to unexpected channel closure
         if (channel_was_closed) {
@@ -127,6 +125,11 @@ int main(void) {
             do_close_channel = true;
         }
 
+        // Process a request's response if indicated by the ISR
+        if (received_request) {
+            process_http_response();
+        }
+
         // If we've received a response in an interrupt handler,
         // we can close the HTTP channel for the time being
         if (received_request || do_close_channel) {
@@ -135,10 +138,6 @@ int main(void) {
             kill_tick = 0;
             http_close_channel();
         }
-
-        // Reached the end of the items available from the API
-        // so reset the counter and start again
-        if (reset_count) reset_count = false;
     }
 }
 
@@ -203,8 +202,7 @@ static void process_http_response(void) {
         // the request was successful (status code 200)
         if (resp_data.result == MV_HTTPRESULT_OK) {
             if (resp_data.status_code == 200) {
-                server_log("HTTP response header count: %lu", resp_data.num_headers);
-                server_log("HTTP response body length: %lu", resp_data.body_length);
+                server_log("HTTP response received -- body length is %lu bytes, there are %lu headers", resp_data.body_length, resp_data.num_headers);
 
                 // Set up a buffer that we'll get Microvisor to write
                 // the response body into
@@ -231,3 +229,5 @@ static void process_http_response(void) {
         server_error("Response data read failed. Status: %i", status);
     }
 }
+
+
