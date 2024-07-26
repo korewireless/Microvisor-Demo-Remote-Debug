@@ -75,7 +75,7 @@ void net_open_network(void) {
 
 
 /**
- * @brief Configure the network Notification Center.
+ * @brief Configure the network notification center.
  */
 static void net_setup_notification_center(void) {
 
@@ -93,12 +93,12 @@ static void net_setup_notification_center(void) {
         // Ask Microvisor to establish the notification center
         // and confirm that it has accepted the request
         enum MvStatus status = mvSetupNotifications(&net_notification_config, &net_handles.notification);
-        do_assert(status == MV_STATUS_OKAY, "Could not start network Notification Center");
+        do_assert(status == MV_STATUS_OKAY, "Could not start network notification center");
 
         // Start the notification IRQ
         NVIC_ClearPendingIRQ(TIM2_IRQn);
         NVIC_EnableIRQ(TIM2_IRQn);
-        server_log("Network Notification Center handle: %lu", (uint32_t)net_handles.notification);
+        server_log("Network notification center handle: %lu", (uint32_t)net_handles.notification);
     }
 }
 

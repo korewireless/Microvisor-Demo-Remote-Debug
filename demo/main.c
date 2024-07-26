@@ -43,6 +43,7 @@ int main(void) {
 
     // Initialize peripherals
     gpio_init();
+    control_system_led(true);
 
     // Get the Device ID and build number and log them
     log_device_info();
@@ -202,7 +203,7 @@ static void process_http_response(void) {
         // the request was successful (status code 200)
         if (resp_data.result == MV_HTTPRESULT_OK) {
             if (resp_data.status_code == 200) {
-                server_log("HTTP response received -- body length is %lu bytes, there are %lu headers", resp_data.body_length, resp_data.num_headers);
+                server_log("HTTP response received. Body length: %lu bytes, %lu headers", resp_data.body_length, resp_data.num_headers);
 
                 // Set up a buffer that we'll get Microvisor to write
                 // the response body into
