@@ -14,6 +14,9 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash
 RUN apt-get update -yqq && DEBIAN_FRONTEND=noninteractive apt-get install -yqq nodejs
 RUN npm install -g twilio-cli
 
+# Install dependencies for this repo ONLY
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -yqq uuid-runtime gdb-multiarch && apt-get clean
+
 WORKDIR /home/${USERNAME}/
 USER $USERNAME
 
