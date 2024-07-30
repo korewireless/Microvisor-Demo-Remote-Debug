@@ -83,9 +83,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uart) {
  * @param buffer: Source string.
  * @param length: String character count.
  */
-void log_uart_output(char* buffer) {
+void log_uart_output(const char* buffer) {
 
-    static char uart_buffer[UART_LOG_TIMESTAMP_MAX_LEN_B + LOG_MESSAGE_MAX_LEN_B + 3] = {0};
+    static char uart_buffer[UART_LOG_TIMESTAMP_MAX_LEN_B + UART_LOG_MESSAGE_MAX_LEN_B + 3] = {0};
 
     uint64_t usec = 0;
     time_t sec = 0;
@@ -102,7 +102,7 @@ void log_uart_output(char* buffer) {
     strftime(uart_buffer, 64, "%F %T.XXX ", gmtime(&sec));
     // Insert the millisecond time over the XXX
     sprintf(&uart_buffer[20], "%03u ", (unsigned)(msec % 1000));
-    uint32_t length = strlen(uart_buffer);
+    const uint32_t length = strlen(uart_buffer);
 
     // Write the timestamp to the message
     sprintf(&uart_buffer[length], "%s\n", buffer);
